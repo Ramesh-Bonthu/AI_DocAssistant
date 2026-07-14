@@ -86,7 +86,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 active ? 'sidebar-item-active' : 'sidebar-item-inactive',
                 collapsed && 'justify-center px-0 py-3'
               )} title={collapsed ? item.label : undefined}>
-                <item.icon size={18} className={cn('flex-shrink-0', active ? 'text-blue-600' : 'text-slate-500')} />
+                <item.icon size={18} className={cn('flex-shrink-0', active ? 'text-white' : 'text-slate-500')} />
                 <AnimatePresence>
                   {!collapsed && (
                     <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="whitespace-nowrap">
@@ -95,7 +95,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   )}
                 </AnimatePresence>
                 {!collapsed && active && (
-                  <motion.div layoutId="sidebar-active" className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                  <motion.div layoutId="sidebar-active" className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
                 )}
               </div>
             </Link>

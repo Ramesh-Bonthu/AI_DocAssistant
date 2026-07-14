@@ -1,0 +1,97 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Application {
+  id          String   @id // e.g. 'invoice', 'offer-letter', etc.
+  name        String
+  description String
+  icon        String
+  color       String
+  gradient    String
+  category    String
+  createdAt   DateTime @default(now())
+
+  clients        Client[]
+  documents      Document[]
+  templates      Template[]
+  activities     Activity[]
+  monthlyMetrics MonthlyMetric[]
+}
+
+model Client {
+  id             String      @id @default(cuid())
+  appId          String
+  application    Application @relation(fields: [appId], references: [id], onDelete: Cascade)
+  company        String
+  contactPerson  String
+  email          String
+  phone          String
+  gstNumber      String
+  address        String
+  city           String
+  country        String
+  postalCode     String
+  paymentTerms   String
+  notes          String
+  logo           String
+  documentsCount Int         @default(0)
+  status         String      // 'active' | 'inactive'
+  revenue        Float       @default(0.0)
+  createdAt      DateTime    @default(now())
+  documents      Document[]
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  appId       String
+  application Application  @relation(fields: [appId], references: [id], onDelete: Cascade)
+  clientId    String?
+  clientRel   Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  title       String
+  client      String       // Storing string client name as backup/fallback for UI
+  status      String       // 'draft' | 'completed' | 'shared' | 'archived'
+  size        String
+  pages       Int          @default(1)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Template {
+  id          String      @id @default(cuid())
+  appId       String
+  application Application @relation(fields: [appId], references: [id], onDelete: Cascade)
+  name        String
+  description String
+  preview     String
+  usageCount  Int         @default(0)
+  isFavorite  Boolean     @default(false)
+  tags        String      // Comma-separated list (e.g. "GST,Popular")
+  createdAt   DateTime    @default(now())
+}
+
+model Activity {
+  id          String      @id @default(cuid())
+  appId       String
+  application Application @relation(fields: [appId], references: [id], onDelete: Cascade)
+  action      String
+  document    String
+  client      String
+  type        String      // 'create' | 'edit' | 'download' | 'share' | 'delete'
+  createdAt   DateTime    @default(now())
+}
+
+model MonthlyMetric {
+  id          String      @id @default(cuid())
+  appId       String
+  application Application @relation(fields: [appId], references: [id], onDelete: Cascade)
+  month       String      // e.g. "Jan", "Feb"
+  documents   Int         @default(0)
+  revenue     Float       @default(0.0)
+  orderIndex  Int         @default(0) // To sort months chronologically (1-12)
+}

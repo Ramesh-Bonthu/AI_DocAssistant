@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Search, Plus, Filter, LayoutGrid, List, ArrowRight,
-  Mail, Phone, Building2, FileText, ChevronDown, SlidersHorizontal,
-  Star, MoreHorizontal, Edit, Trash2, ExternalLink, Check, X
+  Search, Plus, LayoutGrid, List, ArrowRight,
+  Mail, Phone, Building2, FileText, Check, Loader2, Edit, ExternalLink
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +16,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useForm } from 'react-hook-form'
-import { CLIENTS } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 const CLIENT_COLORS = [
@@ -26,6 +24,26 @@ const CLIENT_COLORS = [
   'bg-indigo-500', 'bg-green-500', 'bg-red-500', 'bg-pink-500',
 ]
 
+interface ClientItem {
+  id: string
+  company: string
+  contactPerson: string
+  email: string
+  phone: string
+  gstNumber: string
+  address: string
+  city: string
+  country: string
+  postalCode: string
+  paymentTerms: string
+  notes: string
+  logo: string
+  documentsCount: number
+  status: 'active' | 'inactive'
+  revenue: number
+  createdAt: string
+}
+
 export default function ClientsPage() {
   const params = useParams()
   const appId = params?.appId as string
@@ -33,12 +51,32 @@ export default function ClientsPage() {
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showModal, setShowModal] = useState(false)
-  const [selectedClient, setSelectedClient] = useState<typeof CLIENTS[0] | null>(null)
-  const [clients, setClients] = useState(CLIENTS)
+  const [selectedClient, setSelectedClient] = useState<ClientItem | null>(null)
+  const [clients, setClients] = useState<ClientItem[]>([])
   const [sortBy, setSortBy] = useState('name')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [loading, setLoading] = useState(true)
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm()
+
+  useEffect(() => {
+    if (!appId) return
+    
+    setLoading(true)
+    fetch(`/api/app/${appId}/clients`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch clients')
+        return res.json()
+      })
+      .then((data) => {
+        setClients(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [appId])
 
   const filtered = clients
     .filter((c) => {
@@ -54,19 +92,34 @@ export default function ClientsPage() {
       return 0
     })
 
-  const onSubmit = (data: any) => {
-    const newClient = {
-      ...data,
-      id: String(clients.length + 1),
-      logo: data.company.slice(0, 2).toUpperCase(),
-      documentsCount: 0,
-      status: 'active' as const,
-      revenue: 0,
-      createdAt: new Date().toISOString().split('T')[0],
+  const onSubmit = async (data: any) => {
+    try {
+      const res = await fetch(`/api/app/${appId}/clients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      
+      if (res.ok) {
+        const newClient = await res.json()
+        setClients((prev) => [...prev, newClient])
+        setShowModal(false)
+        reset()
+      } else {
+        console.error('Failed to create client in database')
+      }
+    } catch (err) {
+      console.error('Error creating client:', err)
     }
-    setClients((prev) => [...prev, newClient])
-    setShowModal(false)
-    reset()
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm text-slate-500 font-medium">Loading clients...</p>
+      </div>
+    )
   }
 
   return (
@@ -127,7 +180,7 @@ export default function ClientsPage() {
                 onClick={() => setSelectedClient(client)}>
                 <div className="flex items-start justify-between mb-4">
                   <Avatar className="w-12 h-12">
-                    <AvatarFallback className={cn('text-white text-sm font-bold', CLIENT_COLORS[parseInt(client.id) % CLIENT_COLORS.length])}>
+                    <AvatarFallback className={cn('text-white text-sm font-bold', CLIENT_COLORS[i % CLIENT_COLORS.length])}>
                       {client.logo}
                     </AvatarFallback>
                   </Avatar>
@@ -151,7 +204,7 @@ export default function ClientsPage() {
                     <FileText size={11} /> {client.documentsCount} docs
                   </div>
                   <div className="flex items-center gap-1 text-xs font-medium text-emerald-600">
-                    ₹{(client.revenue / 1000).toFixed(0)}K
+                    ₹{client.revenue >= 100000 ? `${(client.revenue / 100000).toFixed(1)}L` : `${(client.revenue / 1000).toFixed(0)}K`}
                   </div>
                 </div>
                 <Button size="sm" className="w-full mt-3 h-8 text-xs rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all font-medium">
@@ -181,10 +234,10 @@ export default function ClientsPage() {
           </div>
           {filtered.map((client, i) => (
             <motion.div key={client.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-              className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-4 border-b border-slate-50 hover:bg-slate-50/50 transition-colors items-center">
+              className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-4 border-b border-slate-50 hover:bg-slate-50/50 transition-colors items-center flex-shrink-0">
               <div className="flex items-center gap-3">
                 <Avatar className="w-9 h-9 flex-shrink-0">
-                  <AvatarFallback className={cn('text-white text-xs font-bold', CLIENT_COLORS[parseInt(client.id) % CLIENT_COLORS.length])}>
+                  <AvatarFallback className={cn('text-white text-xs font-bold', CLIENT_COLORS[i % CLIENT_COLORS.length])}>
                     {client.logo}
                   </AvatarFallback>
                 </Avatar>
@@ -248,7 +301,7 @@ export default function ClientsPage() {
               </div>
               <div>
                 <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Payment Terms</Label>
-                <Select onValueChange={(v) => {}}>
+                <Select onValueChange={(v) => setValue('paymentTerms', v)}>
                   <SelectTrigger className="rounded-xl">
                     <SelectValue placeholder="Select terms" />
                   </SelectTrigger>
@@ -270,6 +323,10 @@ export default function ClientsPage() {
               <div>
                 <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Postal Code</Label>
                 <Input {...register('postalCode')} placeholder="560001" className="rounded-xl" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Initial Revenue (₹)</Label>
+                <Input {...register('revenue')} placeholder="0" type="number" className="rounded-xl" defaultValue="0" />
               </div>
             </div>
             <div>
@@ -300,7 +357,7 @@ export default function ClientsPage() {
               <DialogHeader>
                 <div className="flex items-center gap-4">
                   <Avatar className="w-14 h-14">
-                    <AvatarFallback className={cn('text-white font-bold text-lg', CLIENT_COLORS[parseInt(selectedClient.id) % CLIENT_COLORS.length])}>
+                    <AvatarFallback className={cn('text-white font-bold text-lg', CLIENT_COLORS[clients.indexOf(selectedClient) % CLIENT_COLORS.length])}>
                       {selectedClient.logo}
                     </AvatarFallback>
                   </Avatar>
@@ -316,8 +373,8 @@ export default function ClientsPage() {
               <div className="grid grid-cols-3 gap-3 mt-4">
                 {[
                   { label: 'Documents', value: selectedClient.documentsCount },
-                  { label: 'Revenue', value: `₹${(selectedClient.revenue / 1000).toFixed(0)}K` },
-                  { label: 'Since', value: selectedClient.createdAt },
+                  { label: 'Revenue', value: selectedClient.revenue >= 100000 ? `₹${(selectedClient.revenue / 100000).toFixed(1)}L` : `₹${selectedClient.revenue.toLocaleString()}` },
+                  { label: 'Since', value: new Date(selectedClient.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) },
                 ].map((s) => (
                   <div key={s.label} className="bg-slate-50 rounded-xl p-3 text-center">
                     <p className="text-lg font-bold text-slate-900">{s.value}</p>
@@ -338,7 +395,7 @@ export default function ClientsPage() {
                   ].map((field) => (
                     <div key={field.label} className="bg-slate-50 rounded-xl p-3">
                       <p className="text-xs text-slate-500 mb-0.5">{field.label}</p>
-                      <p className="font-medium text-slate-800">{field.value}</p>
+                      <p className="font-medium text-slate-800">{field.value || 'None'}</p>
                     </div>
                   ))}
                 </div>
@@ -350,11 +407,13 @@ export default function ClientsPage() {
                 )}
               </div>
               <div className="flex gap-3 mt-4">
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
-                  <FileText size={14} className="mr-1.5" /> Create Document
-                </Button>
+                <Link href={`/app/${appId}/editor`} className="flex-1">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
+                    <FileText size={14} className="mr-1.5" /> Create Document
+                  </Button>
+                </Link>
                 <Button variant="outline" className="rounded-xl border-slate-200">
-                  <Edit size={14} className="mr-1.5" /> Edit
+                  Edit
                 </Button>
               </div>
             </DialogContent>
