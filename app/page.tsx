@@ -133,10 +133,7 @@ export default function LandingPage() {
             className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight tracking-tight max-w-4xl mx-auto"
           >
             Generate Professional{' '}
-            <span className="relative">
-              <span className="relative z-10 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">Business Documents</span>
-              <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full opacity-30" />
-            </span>{' '}
+            <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">Business Documents</span>{' '}
             with AI
           </motion.h1>
 
@@ -373,7 +370,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link href="/applications">
-                <Button size="lg" variant="outline" className="border-blue-400 text-white hover:bg-blue-700 px-8 py-6 text-base rounded-xl">
+                <Button size="lg" variant="outline" className="border-blue-400 text-blue-700 hover:bg-blue-700 px-8 py-6 text-base rounded-xl">
                   View Demo
                 </Button>
               </Link>
@@ -418,7 +415,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm">© 2024 DocFlow AI. All rights reserved.</p>
+            <p className="text-sm">© 2026 DocFlow AI. All rights reserved.</p>
             <p className="text-sm">Built with Next.js, TypeScript & Tailwind CSS</p>
           </div>
         </div>

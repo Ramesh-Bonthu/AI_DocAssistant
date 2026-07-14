@@ -1,17 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   Search, Star, ArrowRight, Layout, Receipt, FileText,
-  Award, UserCircle, HelpCircle, Users, Filter, Grid3X3
+  Award, UserCircle, HelpCircle, Users, Loader2
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { TEMPLATES, APPLICATIONS } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -21,11 +19,6 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   'question-generator': HelpCircle,
   certificates: Award,
   'resume-builder': UserCircle,
-  'resume-analyzer': UserCircle,
-  'experience-letter': FileText,
-  'appointment-letter': FileText,
-  'salary-slip': FileText,
-  'id-card': FileText,
 }
 
 const GRADIENT_PREVIEWS: Record<string, string> = {
@@ -35,20 +28,17 @@ const GRADIENT_PREVIEWS: Record<string, string> = {
   'question-generator': 'from-amber-400 to-orange-500',
   certificates: 'from-rose-400 to-red-600',
   'resume-builder': 'from-cyan-400 to-cyan-600',
-  'resume-analyzer': 'from-indigo-400 to-indigo-600',
-  'experience-letter': 'from-teal-400 to-teal-600',
-  'appointment-letter': 'from-orange-400 to-orange-600',
-  'salary-slip': 'from-green-400 to-green-600',
-  'id-card': 'from-purple-400 to-purple-600',
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  invoice: 'Invoice Templates',
-  'offer-letter': 'Offer Letter Templates',
-  'hr-documents': 'HR Templates',
-  'question-generator': 'Question Paper Templates',
-  certificates: 'Certificate Templates',
-  'resume-builder': 'Resume Templates',
+interface TemplateItem {
+  id: string
+  name: string
+  type: string
+  description: string
+  preview: string
+  usageCount: number
+  isFavorite: boolean
+  tags: string[]
 }
 
 export default function TemplatesPage() {
@@ -56,26 +46,29 @@ export default function TemplatesPage() {
   const appId = params?.appId as string
 
   const [search, setSearch] = useState('')
-  const [activeType, setActiveType] = useState<string>('all')
-  const [favorites, setFavorites] = useState<Set<string>>(
-    new Set(TEMPLATES.filter((t) => t.isFavorite).map((t) => t.id))
-  )
+  const [templates, setTemplates] = useState<TemplateItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-  const allTypes = ['all', ...Array.from(new Set(TEMPLATES.map((t) => t.type)))]
-  const filtered = TEMPLATES.filter((t) => {
-    const matchSearch = t.name.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase()) || t.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
-    const matchType = activeType === 'all' || t.type === activeType
-    return matchSearch && matchType
-  })
-
-  const grouped = allTypes
-    .filter((type) => type !== 'all' && (activeType === 'all' || activeType === type))
-    .map((type) => ({
-      type,
-      label: CATEGORY_LABELS[type] || type,
-      items: filtered.filter((t) => t.type === type),
-    }))
-    .filter((g) => g.items.length > 0)
+  useEffect(() => {
+    if (!appId) return
+    
+    setLoading(true)
+    fetch(`/api/app/${appId}/templates`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch templates')
+        return res.json()
+      })
+      .then((data: TemplateItem[]) => {
+        setTemplates(data)
+        setFavorites(new Set(data.filter((t) => t.isFavorite).map((t) => t.id)))
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [appId])
 
   const toggleFav = (id: string) => {
     setFavorites((prev) => {
@@ -86,13 +79,29 @@ export default function TemplatesPage() {
     })
   }
 
+  const filtered = templates.filter((t) => {
+    const q = search.toLowerCase()
+    return t.name.toLowerCase().includes(q) || 
+           t.description.toLowerCase().includes(q) || 
+           t.tags.some((tag) => tag.toLowerCase().includes(q))
+  })
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm text-slate-500 font-medium">Loading templates...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Templates</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{TEMPLATES.length} professional templates ready to use</p>
+          <p className="text-sm text-slate-500 mt-0.5">{templates.length} templates available for this application</p>
         </div>
       </div>
 
@@ -102,86 +111,60 @@ export default function TemplatesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search templates..." className="pl-9 h-9 rounded-xl border-slate-200 text-sm" />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setActiveType('all')}
-            className={cn('px-3 py-1.5 rounded-lg text-xs font-medium transition-all', activeType === 'all' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-200')}
-          >
-            All Types
-          </button>
-          {allTypes.slice(1).map((type) => {
-            const app = APPLICATIONS.find((a) => a.id === type)
-            return (
-              <button key={type} onClick={() => setActiveType(type)}
-                className={cn('px-3 py-1.5 rounded-lg text-xs font-medium transition-all', activeType === type ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-200')}>
-                {app?.name.split(' ')[0] || type}
-              </button>
-            )
-          })}
-        </div>
       </div>
 
-      {/* Template groups */}
-      {grouped.map((group, gi) => (
-        <motion.div key={group.type} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: gi * 0.1 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-base font-semibold text-slate-900">{group.label}</h2>
-            <div className="flex-1 h-px bg-slate-100" />
-            <span className="text-xs text-slate-400">{group.items.length} templates</span>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {group.items.map((template, i) => {
-              const Icon = TYPE_ICONS[template.type] || FileText
-              const gradient = GRADIENT_PREVIEWS[template.type] || 'from-blue-400 to-blue-600'
-              const isFav = favorites.has(template.id)
-              return (
-                <motion.div key={template.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                  className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-slate-200 transition-all hover:-translate-y-0.5 group">
-                  {/* Preview */}
-                  <div className={`bg-gradient-to-br ${gradient} h-32 relative flex items-center justify-center overflow-hidden`}>
-                    <div className="absolute inset-0 bg-white/10" />
-                    <div className="relative bg-white/95 rounded-lg p-3 w-24 shadow-lg">
-                      <div className="h-1.5 w-16 bg-slate-200 rounded mb-1.5" />
-                      <div className="h-1 w-12 bg-slate-100 rounded mb-2" />
-                      <div className="space-y-0.5">
-                        {[...Array(4)].map((_, j) => (
-                          <div key={j} className="h-0.5 bg-slate-100 rounded" style={{ width: `${80 - j * 10}%` }} />
-                        ))}
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleFav(template.id) }}
-                      className="absolute top-3 right-3 w-7 h-7 bg-white/90 rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-sm"
-                    >
-                      <Star size={13} className={isFav ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
-                    </button>
+      {/* Grid */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {filtered.map((template, i) => {
+          const Icon = TYPE_ICONS[template.type] || FileText
+          const gradient = GRADIENT_PREVIEWS[template.type] || 'from-blue-400 to-blue-600'
+          const isFav = favorites.has(template.id)
+          return (
+            <motion.div key={template.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-slate-200 transition-all hover:-translate-y-0.5 group">
+              {/* Preview */}
+              <div className={`bg-gradient-to-br ${gradient} h-32 relative flex items-center justify-center overflow-hidden`}>
+                <div className="absolute inset-0 bg-white/10" />
+                <div className="relative bg-white/95 rounded-lg p-3 w-24 shadow-lg">
+                  <div className="h-1.5 w-16 bg-slate-200 rounded mb-1.5" />
+                  <div className="h-1 w-12 bg-slate-100 rounded mb-2" />
+                  <div className="space-y-0.5">
+                    {[...Array(4)].map((_, j) => (
+                      <div key={j} className="h-0.5 bg-slate-100 rounded" style={{ width: `${80 - j * 10}%` }} />
+                    ))}
                   </div>
-                  {/* Info */}
-                  <div className="p-4">
-                    <div className="flex items-start justify-between mb-1.5">
-                      <h3 className="text-sm font-semibold text-slate-900 leading-tight">{template.name}</h3>
-                    </div>
-                    <p className="text-xs text-slate-500 mb-3 leading-relaxed">{template.description}</p>
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {template.tags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{tag}</span>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400">{template.usageCount.toLocaleString()} uses</span>
-                      <Link href={`/app/${appId}/editor`}>
-                        <Button size="sm" className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                          Use Template <ArrowRight size={11} className="ml-1" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-        </motion.div>
-      ))}
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleFav(template.id) }}
+                  className="absolute top-3 right-3 w-7 h-7 bg-white/90 rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+                >
+                  <Star size={13} className={isFav ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
+                </button>
+              </div>
+              {/* Info */}
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-1.5">
+                  <h3 className="text-sm font-semibold text-slate-900 leading-tight">{template.name}</h3>
+                </div>
+                <p className="text-xs text-slate-500 mb-3 leading-relaxed">{template.description}</p>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {template.tags.slice(0, 2).map((tag) => (
+                    <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{tag}</span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">{template.usageCount.toLocaleString()} uses</span>
+                  <Link href={`/app/${appId}/editor`}>
+                    <Button size="sm" className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                      Use Template <ArrowRight size={11} className="ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )
+        })}
+      </div>
 
       {filtered.length === 0 && (
         <div className="text-center py-20">

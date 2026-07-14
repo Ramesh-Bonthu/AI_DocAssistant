@@ -1,7 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Clock, RotateCcw, GitBranch, Eye, ChevronRight } from 'lucide-react'
+import { Clock, RotateCcw, GitBranch, Eye, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -11,35 +13,61 @@ const VERSIONS = [
   { id: 'v4', label: 'Version 4', tag: null, time: 'Yesterday, 4:30 PM', author: 'Ajay Kumar', changes: 'Added company logo, changed font to Inter', color: 'bg-slate-400' },
   { id: 'v3', label: 'Version 3', tag: null, time: 'Yesterday, 11:00 AM', author: 'Ajay Kumar', changes: 'Fixed GST calculation for IGST', color: 'bg-slate-400' },
   { id: 'v2', label: 'Version 2', tag: null, time: '2 days ago', author: 'Ajay Kumar', changes: 'Initial design changes, updated template', color: 'bg-slate-400' },
-  { id: 'v1', label: 'Version 1', tag: 'Original', time: '3 days ago', author: 'Ajay Kumar', changes: 'Document created from Invoice template', color: 'bg-slate-300' },
-]
-
-const HISTORY_ITEMS = [
-  { date: 'Today', items: [
-    { time: '2:45 PM', action: 'Edited', doc: 'INV-2024-001', detail: 'Updated payment due date' },
-    { time: '11:30 AM', action: 'Generated', doc: 'Offer Letter - Priya Nair', detail: 'New document created from template' },
-    { time: '9:15 AM', action: 'Downloaded', doc: 'Certificate - Web Dev', detail: 'Exported as PDF' },
-  ]},
-  { date: 'Yesterday', items: [
-    { time: '5:00 PM', action: 'Shared', doc: 'INV-2024-002', detail: 'Sent to client via email' },
-    { time: '3:20 PM', action: 'Edited', doc: 'HR Policy', detail: 'Added remote work clause' },
-    { time: '1:00 PM', action: 'Generated', doc: 'Question Paper - Maths', detail: 'Generated with AI assistance' },
-  ]},
-  { date: '2 days ago', items: [
-    { time: '4:30 PM', action: 'Archived', doc: 'Resume Analyzer', detail: 'Moved to archive' },
-    { time: '10:45 AM', action: 'Edited', doc: 'Salary Slip', detail: 'Updated HRA component' },
-  ]},
+  { id: 'v1', label: 'Version 1', tag: 'Original', time: '3 days ago', author: 'Ajay Kumar', changes: 'Document created from template', color: 'bg-slate-300' },
 ]
 
 const ACTION_COLORS: Record<string, string> = {
-  Edited: 'bg-amber-50 text-amber-600',
-  Generated: 'bg-blue-50 text-blue-600',
-  Downloaded: 'bg-emerald-50 text-emerald-600',
-  Shared: 'bg-violet-50 text-violet-600',
-  Archived: 'bg-slate-100 text-slate-500',
+  create: 'bg-blue-50 text-blue-600 border-blue-100',
+  edit: 'bg-amber-50 text-amber-600 border-amber-100',
+  download: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+  share: 'bg-violet-50 text-violet-600 border-violet-100',
+  delete: 'bg-red-50 text-red-600 border-red-100',
+}
+
+interface HistoryItem {
+  id: string
+  action: string
+  document: string
+  client: string
+  time: string
+  type: string
 }
 
 export default function HistoryPage() {
+  const params = useParams()
+  const appId = params?.appId as string
+
+  const [history, setHistory] = useState<HistoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!appId) return
+
+    setLoading(true)
+    fetch(`/api/app/${appId}/history`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch history')
+        return res.json()
+      })
+      .then((data) => {
+        setHistory(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [appId])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm text-slate-500 font-medium">Loading history logs...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -53,7 +81,7 @@ export default function HistoryPage() {
           <div className="flex items-center gap-2 mb-5">
             <GitBranch className="text-blue-600" size={18} />
             <h2 className="text-base font-semibold text-slate-900">Version History</h2>
-            <Badge className="ml-auto text-xs bg-slate-50 text-slate-600 border-slate-200">INV-2024-001</Badge>
+            <Badge className="ml-auto text-xs bg-slate-50 text-slate-600 border-slate-200">Active Document</Badge>
           </div>
           <div className="relative">
             <div className="absolute left-4 top-0 bottom-0 w-px bg-slate-100" />
@@ -104,33 +132,31 @@ export default function HistoryPage() {
             <Clock className="text-slate-500" size={18} />
             <h2 className="text-base font-semibold text-slate-900">Activity Timeline</h2>
           </div>
-          <div className="space-y-6">
-            {HISTORY_ITEMS.map((group, gi) => (
-              <div key={group.date}>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="h-px flex-1 bg-slate-100" />
-                  <span className="text-xs font-semibold text-slate-500 bg-white px-2">{group.date}</span>
-                  <div className="h-px flex-1 bg-slate-100" />
-                </div>
-                <div className="space-y-2">
-                  {group.items.map((item, ii) => (
-                    <motion.div key={ii} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: gi * 0.1 + ii * 0.05 }}
-                      className="flex gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
-                      <span className="text-xs text-slate-400 w-16 flex-shrink-0 pt-0.5">{item.time}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className={cn('text-xs font-semibold px-1.5 py-0.5 rounded-md', ACTION_COLORS[item.action] || 'bg-slate-50 text-slate-600')}>
-                            {item.action}
-                          </span>
-                          <span className="text-xs font-medium text-slate-800">{item.doc}</span>
-                        </div>
-                        <p className="text-xs text-slate-500">{item.detail}</p>
+          <div className="relative pl-6 space-y-4">
+            <div className="absolute left-2.5 top-2 bottom-2 w-px bg-slate-100" />
+            {history.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-10">No recent activities in this workspace</p>
+            ) : (
+              history.map((item, i) => (
+                <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                  className="relative flex gap-4 pl-4 group">
+                  <div className="absolute left-[-18.5px] top-1.5 w-2 h-2 rounded-full bg-slate-300 group-hover:bg-blue-500 transition-colors" />
+                  <div className="flex-1 flex items-start justify-between bg-slate-50 rounded-xl p-3 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <Badge variant="outline" className={cn('text-xs font-semibold px-1.5 py-0.5 rounded-md uppercase', ACTION_COLORS[item.type] || 'bg-slate-50 text-slate-600')}>
+                          {item.type}
+                        </Badge>
+                        <span className="text-sm font-semibold text-slate-800">{item.action}</span>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            ))}
+                      <p className="text-xs text-slate-500 font-medium">Document: <span className="text-slate-700">{item.document}</span></p>
+                      <p className="text-xs text-slate-400 mt-0.5">Client: {item.client}</p>
+                    </div>
+                    <span className="text-xs text-slate-400 font-medium whitespace-nowrap">{item.time}</span>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>

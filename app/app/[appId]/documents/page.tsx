@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   Search, Plus, Download, Copy, Pencil, Trash2, MoreHorizontal,
-  FileText, Filter, LayoutGrid, List, Archive, Share2, Clock, CheckCircle, FileEdit
+  FileText, Archive, Share2, CheckCircle, FileEdit, Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
-import { DOCUMENTS } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 const STATUS_CONFIG = {
@@ -47,13 +46,59 @@ const TYPE_COLORS: Record<string, string> = {
   'resume-builder': 'bg-cyan-50 text-cyan-600',
 }
 
+interface DocumentItem {
+  id: string
+  title: string
+  client: string
+  status: 'draft' | 'completed' | 'shared' | 'archived'
+  updatedAt: string
+  pages: number
+  size: string
+  type: string
+}
+
 export default function DocumentsPage() {
   const params = useParams()
   const appId = params?.appId as string
 
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<'all' | 'draft' | 'completed' | 'shared' | 'archived'>('all')
-  const [docs, setDocs] = useState(DOCUMENTS)
+  const [docs, setDocs] = useState<DocumentItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!appId) return
+    
+    setLoading(true)
+    fetch(`/api/app/${appId}/documents`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch documents')
+        return res.json()
+      })
+      .then((data) => {
+        setDocs(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [appId])
+
+  const deleteDoc = async (id: string) => {
+    try {
+      const res = await fetch(`/api/app/${appId}/documents?id=${id}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        setDocs((prev) => prev.filter((d) => d.id !== id))
+      } else {
+        console.error('Failed to delete document from database')
+      }
+    } catch (err) {
+      console.error('Error deleting document:', err)
+    }
+  }
 
   const tabs = [
     { key: 'all', label: 'All Documents', count: docs.length },
@@ -69,7 +114,14 @@ export default function DocumentsPage() {
     return matchSearch && matchTab
   })
 
-  const deleteDoc = (id: string) => setDocs((prev) => prev.filter((d) => d.id !== id))
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm text-slate-500 font-medium">Loading documents...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -116,7 +168,7 @@ export default function DocumentsPage() {
           </div>
         ) : (
           filtered.map((doc, i) => {
-            const status = STATUS_CONFIG[doc.status]
+            const status = STATUS_CONFIG[doc.status] || STATUS_CONFIG.draft
             const StatusIcon = status.icon
             return (
               <motion.div key={doc.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
