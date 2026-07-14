@@ -79,7 +79,7 @@ export default function LandingPage() {
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
-              <Link href="/applications">
+              <Link href="/login">
                 <Button variant="ghost" size="sm" className="text-slate-600">Login</Button>
               </Link>
               <Link href="/applications">
