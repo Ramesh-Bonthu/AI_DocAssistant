@@ -313,6 +313,16 @@ export async function createClient(appId: string, data: any) {
  * Get all templates for a specific application workspace.
  */
 export async function getTemplates(appId: string) {
+  // Dynamically update template name in database if it exists
+  try {
+    await prisma.template.updateMany({
+      where: { appId: 'offer-letter', name: 'Corporate Offer Letter' },
+      data: { name: 'Internship Offer Letter', description: 'Harsha Perfect Solutions SDE Intern Offer Letter template' }
+    })
+  } catch (error) {
+    console.error('Failed to update template name in DB:', error)
+  }
+
   const templates = await prisma.template.findMany({
     where: { appId },
     orderBy: { usageCount: 'desc' }
@@ -400,4 +410,28 @@ export async function getAnalytics(appId: string) {
     })),
     docTypes
   }
+}
+
+export async function createTemplate(appId: string, data: { name: string; description: string; tags?: string[] }) {
+  const tagsStr = data.tags ? data.tags.join(',') : 'Corporate,Formal'
+  return await prisma.template.create({
+    data: {
+      appId,
+      name: data.name,
+      description: data.description,
+      preview: '/templates/offer-1.jpg',
+      usageCount: 0,
+      isFavorite: false,
+      tags: tagsStr
+    }
+  })
+}
+
+export async function deleteTemplate(appId: string, templateId: string) {
+  return await prisma.template.delete({
+    where: {
+      id: templateId,
+      appId
+    }
+  })
 }

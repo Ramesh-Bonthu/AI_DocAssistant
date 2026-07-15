@@ -101,7 +101,110 @@ export default function EditorPage() {
 function getInitialContent(appId: string): string {
   const contents: Record<string, string> = {
     invoice: `<h1>Tax Invoice</h1><p><strong>Invoice No:</strong> INV-2024-001</p><p><strong>Date:</strong> June 15, 2024</p><p><strong>Due Date:</strong> July 15, 2024</p><br/><p><strong>Bill To:</strong></p><p>TechNova Solutions<br/>42 Tech Park, Whitefield<br/>Bengaluru - 560066</p><br/><table><tbody><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr><tr><td>Software Development Services</td><td>1</td><td>₹50,000</td><td>₹50,000</td></tr><tr><td>UI/UX Design</td><td>1</td><td>₹30,000</td><td>₹30,000</td></tr></tbody></table><br/><p><strong>Subtotal:</strong> ₹80,000</p><p><strong>GST (18%):</strong> ₹14,400</p><p><strong>Total:</strong> ₹94,400</p>`,
-    'offer-letter': `<h1>Offer Letter</h1><p>Date: June 15, 2024</p><br/><p>Dear Arjun Sharma,</p><br/><p>We are pleased to offer you the position of <strong>Senior Software Engineer</strong> at <strong>TechNova Solutions</strong>. After careful consideration of your qualifications and interview performance, we are confident that you will be a valuable addition to our team.</p><br/><h2>Position Details</h2><p><strong>Designation:</strong> Senior Software Engineer</p><p><strong>Department:</strong> Engineering</p><p><strong>Reporting To:</strong> VP of Engineering</p><p><strong>Date of Joining:</strong> July 1, 2024</p><br/><h2>Compensation</h2><p><strong>Annual CTC:</strong> ₹18,00,000</p><p><strong>Monthly In-Hand:</strong> ₹1,20,000 (approx.)</p><br/><p>Please sign and return this letter by June 20, 2024.</p><br/><p>Sincerely,<br/><strong>HR Department</strong><br/>TechNova Solutions</p>`,
+    'offer-letter': `<div style="margin: -48px -48px 25px -48px; position: relative; overflow: hidden; height: 110px;">
+  <svg viewBox="0 0 794 110" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block;">
+    <!-- Light Blue Wave -->
+    <path d="M0 0 L794 0 L794 90 C600 120, 350 50, 0 95 Z" fill="#008BE3" opacity="0.8" />
+    <!-- Dark Blue Wave -->
+    <path d="M0 0 L794 0 L794 75 C620 105, 380 45, 0 80 Z" fill="#024B80" />
+  </svg>
+</div>
+
+<div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 20px; margin-bottom: 20px;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="46" fill="white" stroke="#008be3" stroke-width="4" />
+      <path d="M30 25 V75 H42 V53 H58 V75 H70 V25 H58 V47 H42 V25 H30 Z" fill="#008be3" />
+    </svg>
+    <div style="font-family: 'Arial', sans-serif; line-height: 1.1; text-align: left;">
+      <div style="font-size: 26px; font-weight: 900; color: #008be3; letter-spacing: 0.5px;">HPS</div>
+      <div style="font-size: 10px; font-weight: bold; color: #008be3; letter-spacing: 1px;">HARSHA PERFECT</div>
+      <div style="font-size: 10px; font-weight: bold; color: #008be3; letter-spacing: 1px;">SOLUTIONS</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+  <span style="font-size: 24px; font-weight: bold; font-family: 'Times New Roman', Times, serif; color: #000000; letter-spacing: 0.5px;">Internship Offer Letter - SDE Intern</span>
+</div>
+
+<div style="font-family: 'Times New Roman', Times, serif; color: #000000; font-size: 14px; line-height: 1.35; padding: 0 10px;">
+  <div style="margin-bottom: 25px;">
+    <strong>HPS OPC Pvt. Ltd</strong><br/>
+    <strong>31-7-67, Assam Gardens,</strong><br/>
+    <strong>Visakhapatnam,</strong><br/>
+    <strong>Andhra Pradesh - 530020</strong><br/>
+    <strong>+91 92466 15251</strong><br/>
+    <strong>director@thehps.in</strong><br/>
+    <strong>Website: thehps.in</strong><br/>
+    <strong>Date: 11/04/2026</strong><br/>
+    <strong>Subject: Offer Letter for SDE Intern</strong>
+  </div>
+
+  <p style="margin-bottom: 12px;">Dear <strong>Boddeda Vishnu Vardhan</strong>,</p>
+  
+  <p style="text-align: justify; margin-bottom: 12px;">
+    We are pleased to offer you the position of <strong>Software Development Engineer (SDE) Intern</strong> at HPS (OPC) Pvt. Ltd., commencing from <strong>13-05-2026</strong> to <strong>08-10-2026</strong>. This internship is part of our initiative to nurture emerging talent in software engineering and modern development practices.
+  </p>
+  
+  <p style="margin-bottom: 8px;">
+    During your internship, you will work closely with our Engineering Team on real-world software development projects involving:
+  </p>
+  <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+    <li style="margin-bottom: 4px;">Designing and developing scalable applications</li>
+    <li style="margin-bottom: 4px;">Writing clean, efficient, and maintainable code</li>
+    <li style="margin-bottom: 4px;">Working on data structures, algorithms, and system design fundamentals</li>
+    <li style="margin-bottom: 4px;">Debugging, testing, and optimizing application performance</li>
+    <li style="margin-bottom: 4px;">Collaborating with cross-functional teams to deliver high-quality software solutions</li>
+  </ul>
+
+  <p style="text-align: justify; margin-bottom: 15px;">
+    This opportunity will provide hands-on experience in building robust systems and exposure to industry-standard development workflows and tools. You are expected to dedicate 20 hours per week, maintain a high level of professionalism, meet project deadlines, and actively collaborate with the team.
+  </p>
+
+  <p style="margin-bottom: 8px;">
+    Internship Details:
+  </p>
+  <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+    <li style="margin-bottom: 4px;"><strong>Location:</strong> Hybrid</li>
+    <li style="margin-bottom: 4px;"><strong>Start Date:</strong> 13-05-2026</li>
+    <li style="margin-bottom: 4px;"><strong>End Date:</strong> 08-10-2026</li>
+  </ul>
+
+  <p style="margin-bottom: 8px;">
+    <strong>Terms & Conditions:</strong>
+  </p>
+  <ol style="margin-left: 20px; margin-bottom: 15px; list-style-type: decimal;">
+    <li style="margin-bottom: 4px;">You are required to maintain confidentiality of all company marketing strategies and data.</li>
+    <li style="margin-bottom: 4px;">A final report and presentation summarizing your contributions must be submitted at the end of the internship.</li>
+    <li style="margin-bottom: 4px;">Based on your performance and contribution, the internship may be extended, and you may be considered for a full-time role at HPS(OPC) Pvt. Ltd.</li>
+  </ol>
+
+  <p style="text-align: justify; margin-bottom: 30px;">
+    To confirm your acceptance of this offer, please visit our office in person at your earliest convenience. This will allow us to complete the onboarding formalities and provide further instructions for your internship.
+  </p>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; margin-bottom: 30px;">
+    <div>
+      <strong>Warm regards,</strong><br/><br/>
+      <strong>Dr. P. Satheesh</strong><br/>
+      <strong>Director</strong><br/>
+      <strong>Harsha Perfect Solutions OPC Pvt. Ltd.</strong>
+    </div>
+    <div style="text-align: right; min-width: 150px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+      <strong>Candidate Signature</strong>
+    </div>
+  </div>
+</div>
+
+<div style="margin: 40px -48px -48px -48px; position: relative; overflow: hidden; height: 110px;">
+  <svg viewBox="0 0 794 110" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block;">
+    <!-- Light Blue Wave -->
+    <path d="M0 110 L794 110 L794 20 C600 -10, 350 60, 0 15 Z" fill="#008BE3" opacity="0.8" />
+    <!-- Dark Blue Wave -->
+    <path d="M0 110 L794 110 L794 35 C620 5, 380 55, 0 30 Z" fill="#024B80" />
+  </svg>
+</div>`,
     certificates: `<h1 style="text-align: center;">Certificate of Completion</h1><br/><p style="text-align: center;">This is to certify that</p><br/><h2 style="text-align: center;">Priya Nair</h2><br/><p style="text-align: center;">has successfully completed the</p><br/><h2 style="text-align: center;">Full Stack Web Development Program</h2><br/><p style="text-align: center;">Duration: 6 Months | June 2024</p><br/><p style="text-align: center;">Issued by <strong>EduSpark Institute</strong></p>`,
     'resume-builder': `<h1>Priya Nair</h1><p>Senior Software Engineer | priya@email.com | +91 87654 32109 | LinkedIn</p><hr/><h2>Professional Summary</h2><p>Experienced software engineer with 6+ years building scalable web applications using React, Node.js, and AWS. Passionate about clean code and user experience.</p><hr/><h2>Experience</h2><p><strong>Senior Frontend Engineer</strong> — GlobalEdge Consulting (2021–Present)</p><ul><li>Led a team of 5 engineers to rebuild the core platform</li><li>Reduced page load time by 60% through optimization</li><li>Implemented CI/CD pipeline with 99.9% uptime</li></ul><hr/><h2>Education</h2><p><strong>B.Tech Computer Science</strong> — NIT Calicut (2017)</p><hr/><h2>Skills</h2><p>React · TypeScript · Node.js · PostgreSQL · AWS · Docker · Git</p>`,
   }
@@ -111,7 +214,110 @@ function getInitialContent(appId: string): string {
 function generateDocument(appId: string, data: Record<string, string>): string {
   const templates: Record<string, (d: Record<string, string>) => string> = {
     invoice: (d) => `<h1>Tax Invoice</h1><p><strong>Invoice No:</strong> INV-2024-${String(Math.floor(Math.random() * 999)).padStart(3, '0')}</p><p><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}</p><p><strong>Due Date:</strong> ${d.dueDate || 'N/A'}</p><br/><p><strong>Bill To:</strong><br/>${d.company || 'Client Name'}<br/>${d.email || ''}</p><br/><table><tbody><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr><tr><td>${d.products || 'Service'}</td><td>1</td><td>₹${d.amount || '0'}</td><td>₹${d.amount || '0'}</td></tr></tbody></table><br/><p><strong>Subtotal:</strong> ₹${d.amount || '0'}</p><p><strong>GST (18%):</strong> ₹${Math.round(parseFloat(d.amount || '0') * 0.18)}</p><p><strong>Total:</strong> ₹${Math.round(parseFloat(d.amount || '0') * 1.18)}</p>`,
-    'offer-letter': (d) => `<h1>Offer Letter</h1><p>Date: ${new Date().toLocaleDateString('en-IN')}</p><br/><p>Dear <strong>${d.employeeName || 'Candidate'}</strong>,</p><br/><p>We are delighted to offer you the position of <strong>${d.designation || 'Employee'}</strong> at our organization.</p><br/><p><strong>Department:</strong> ${d.department || 'N/A'}</p><p><strong>Reporting To:</strong> ${d.manager || 'N/A'}</p><p><strong>Annual CTC:</strong> ₹${d.salary || '0'}</p><p><strong>Date of Joining:</strong> ${d.joiningDate || 'N/A'}</p><br/><p>We look forward to having you on our team.</p><br/><p>Sincerely,<br/><strong>HR Department</strong></p>`,
+    'offer-letter': (d) => `<div style="margin: -48px -48px 25px -48px; position: relative; overflow: hidden; height: 110px;">
+  <svg viewBox="0 0 794 110" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block;">
+    <!-- Light Blue Wave -->
+    <path d="M0 0 L794 0 L794 90 C600 120, 350 50, 0 95 Z" fill="#008BE3" opacity="0.8" />
+    <!-- Dark Blue Wave -->
+    <path d="M0 0 L794 0 L794 75 C620 105, 380 45, 0 80 Z" fill="#024B80" />
+  </svg>
+</div>
+
+<div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 20px; margin-bottom: 20px;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="46" fill="white" stroke="#008be3" stroke-width="4" />
+      <path d="M30 25 V75 H42 V53 H58 V75 H70 V25 H58 V47 H42 V25 H30 Z" fill="#008be3" />
+    </svg>
+    <div style="font-family: 'Arial', sans-serif; line-height: 1.1; text-align: left;">
+      <div style="font-size: 26px; font-weight: 900; color: #008be3; letter-spacing: 0.5px;">HPS</div>
+      <div style="font-size: 10px; font-weight: bold; color: #008be3; letter-spacing: 1px;">HARSHA PERFECT</div>
+      <div style="font-size: 10px; font-weight: bold; color: #008be3; letter-spacing: 1px;">SOLUTIONS</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+  <span style="font-size: 24px; font-weight: bold; font-family: 'Times New Roman', Times, serif; color: #000000; letter-spacing: 0.5px;">Internship Offer Letter - ${d.designation || 'SDE Intern'}</span>
+</div>
+
+<div style="font-family: 'Times New Roman', Times, serif; color: #000000; font-size: 14px; line-height: 1.35; padding: 0 10px;">
+  <div style="margin-bottom: 25px;">
+    <strong>HPS OPC Pvt. Ltd</strong><br/>
+    <strong>31-7-67, Assam Gardens,</strong><br/>
+    <strong>Visakhapatnam,</strong><br/>
+    <strong>Andhra Pradesh - 530020</strong><br/>
+    <strong>+91 92466 15251</strong><br/>
+    <strong>director@thehps.in</strong><br/>
+    <strong>Website: thehps.in</strong><br/>
+    <strong>Date: ${new Date().toLocaleDateString('en-IN')}</strong><br/>
+    <strong>Subject: Offer Letter for ${d.designation || 'SDE Intern'}</strong>
+  </div>
+
+  <p style="margin-bottom: 12px;">Dear <strong>${d.employeeName || 'Boddeda Vishnu Vardhan'}</strong>,</p>
+  
+  <p style="text-align: justify; margin-bottom: 12px;">
+    We are pleased to offer you the position of <strong>${d.designation || 'Software Development Engineer (SDE) Intern'}</strong> at HPS (OPC) Pvt. Ltd., commencing from <strong>${d.joiningDate || '13-05-2026'}</strong> to <strong>${d.endDate || '08-10-2026'}</strong>. This internship is part of our initiative to nurture emerging talent in software engineering and modern development practices.
+  </p>
+  
+  <p style="margin-bottom: 8px;">
+    During your internship, you will work closely with our Engineering Team on real-world software development projects involving:
+  </p>
+  <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+    <li style="margin-bottom: 4px;">Designing and developing scalable applications</li>
+    <li style="margin-bottom: 4px;">Writing clean, efficient, and maintainable code</li>
+    <li style="margin-bottom: 4px;">Working on data structures, algorithms, and system design fundamentals</li>
+    <li style="margin-bottom: 4px;">Debugging, testing, and optimizing application performance</li>
+    <li style="margin-bottom: 4px;">Collaborating with cross-functional teams to deliver high-quality software solutions</li>
+  </ul>
+
+  <p style="text-align: justify; margin-bottom: 15px;">
+    This opportunity will provide hands-on experience in building robust systems and exposure to industry-standard development workflows and tools. You are expected to dedicate 20 hours per week, maintain a high level of professionalism, meet project deadlines, and actively collaborate with the team.
+  </p>
+
+  <p style="margin-bottom: 8px;">
+    Internship Details:
+  </p>
+  <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+    <li style="margin-bottom: 4px;"><strong>Location:</strong> ${d.location || 'Hybrid'}</li>
+    <li style="margin-bottom: 4px;"><strong>Start Date:</strong> ${d.joiningDate || '13-05-2026'}</li>
+    <li style="margin-bottom: 4px;"><strong>End Date:</strong> ${d.endDate || '08-10-2026'}</li>
+  </ul>
+
+  <p style="margin-bottom: 8px;">
+    <strong>Terms & Conditions:</strong>
+  </p>
+  <ol style="margin-left: 20px; margin-bottom: 15px; list-style-type: decimal;">
+    <li style="margin-bottom: 4px;">You are required to maintain confidentiality of all company marketing strategies and data.</li>
+    <li style="margin-bottom: 4px;">A final report and presentation summarizing your contributions must be submitted at the end of the internship.</li>
+    <li style="margin-bottom: 4px;">Based on your performance and contribution, the internship may be extended, and you may be considered for a full-time role at HPS(OPC) Pvt. Ltd.</li>
+  </ol>
+
+  <p style="text-align: justify; margin-bottom: 30px;">
+    To confirm your acceptance of this offer, please visit our office in person at your earliest convenience. This will allow us to complete the onboarding formalities and provide further instructions for your internship.
+  </p>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; margin-bottom: 30px;">
+    <div>
+      <strong>Warm regards,</strong><br/><br/>
+      <strong>${d.manager || 'Dr. P. Satheesh'}</strong><br/>
+      <strong>Director</strong><br/>
+      <strong>Harsha Perfect Solutions OPC Pvt. Ltd.</strong>
+    </div>
+    <div style="text-align: right; min-width: 150px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+      <strong>Candidate Signature</strong>
+    </div>
+  </div>
+</div>
+
+<div style="margin: 40px -48px -48px -48px; position: relative; overflow: hidden; height: 110px;">
+  <svg viewBox="0 0 794 110" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block;">
+    <!-- Light Blue Wave -->
+    <path d="M0 110 L794 110 L794 20 C600 -10, 350 60, 0 15 Z" fill="#008BE3" opacity="0.8" />
+    <!-- Dark Blue Wave -->
+    <path d="M0 110 L794 110 L794 35 C620 5, 380 55, 0 30 Z" fill="#024B80" />
+  </svg>
+</div>`,
     certificates: (d) => `<h1 style="text-align:center;">Certificate of ${d.certificateType || 'Completion'}</h1><br/><p style="text-align:center;">This is to certify that</p><br/><h2 style="text-align:center;">${d.studentName || 'Student Name'}</h2><br/><p style="text-align:center;">has successfully completed the</p><br/><h2 style="text-align:center;">${d.course || 'Course Name'}</h2><br/><p style="text-align:center;">Duration: ${d.duration || 'N/A'}</p><br/><p style="text-align:center;">Issued on ${new Date().toLocaleDateString('en-IN')}</p>`,
   }
   const fn = templates[appId]

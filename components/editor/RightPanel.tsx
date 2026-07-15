@@ -274,12 +274,12 @@ function getFormFields(appId: string) {
       { name: 'paymentTerms', label: 'Payment Terms', placeholder: 'Net 30', type: 'select', options: ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Immediate'] },
     ],
     'offer-letter': [
-      { name: 'employeeName', label: 'Employee Name', placeholder: 'Arjun Sharma' },
-      { name: 'designation', label: 'Designation', placeholder: 'Senior Software Engineer' },
-      { name: 'salary', label: 'Annual CTC (₹)', placeholder: '1800000', inputType: 'number' },
-      { name: 'joiningDate', label: 'Joining Date', placeholder: '', inputType: 'date' },
-      { name: 'department', label: 'Department', placeholder: 'Engineering', type: 'select', options: ['Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations'] },
-      { name: 'manager', label: 'Reporting Manager', placeholder: 'Raj Kumar' },
+      { name: 'employeeName', label: 'Employee Name', placeholder: 'Boddeda Vishnu Vardhan' },
+      { name: 'designation', label: 'Designation / Role', placeholder: 'Software Development Engineer (SDE) Intern' },
+      { name: 'joiningDate', label: 'Start Date', placeholder: '', inputType: 'date' },
+      { name: 'endDate', label: 'End Date', placeholder: '', inputType: 'date' },
+      { name: 'location', label: 'Location', placeholder: 'Hybrid', type: 'select', options: ['Hybrid', 'Remote', 'Onsite'] },
+      { name: 'manager', label: 'Director / Signatory', placeholder: 'Dr. P. Satheesh' },
     ],
     'hr-documents': [
       { name: 'employeeName', label: 'Employee Name', placeholder: 'Arjun Sharma' },

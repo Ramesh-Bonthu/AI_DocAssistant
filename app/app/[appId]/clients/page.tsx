@@ -55,6 +55,15 @@ export default function ClientsPage() {
     if (role) setUserRole(role)
   }, [])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('add') === 'true') {
+        setShowModal(true)
+      }
+    }
+  }, [])
+
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showModal, setShowModal] = useState(false)

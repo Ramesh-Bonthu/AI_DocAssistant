@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Layout, FileText, History,
   BarChart2, Settings, Receipt, HelpCircle, Award, UserCircle, BarChart,
-  Briefcase, ClipboardList, Banknote, CreditCard, PanelLeftClose, PanelLeftOpen
+  Briefcase, ClipboardList, Banknote, CreditCard, PanelLeftClose, PanelLeftOpen, Plus
 } from 'lucide-react'
 import { APPLICATIONS } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'

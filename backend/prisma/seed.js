@@ -207,7 +207,7 @@ async function main() {
     data: { title: 'Offer Letter - Vikram Singh (PM)', client: 'ByteForge Technologies', status: 'shared', size: '98 KB', pages: 3, appId: 'offer-letter', clientId: seededOfferClients[0].id }
   })
 
-  await prisma.template.create({ data: { name: 'Corporate Offer Letter', description: 'Standard hiring offer with all standard clauses', preview: '/templates/offer-1.jpg', usageCount: 189, isFavorite: true, tags: 'Corporate,Formal', appId: 'offer-letter' } })
+  await prisma.template.create({ data: { name: 'Internship Offer Letter', description: 'Harsha Perfect Solutions SDE Intern Offer Letter template', preview: '/templates/offer-1.jpg', usageCount: 189, isFavorite: true, tags: 'Corporate,Formal', appId: 'offer-letter' } })
 
   await prisma.activity.create({ data: { action: 'Created Offer Letter', document: 'Offer Letter - Arjun Sharma', client: 'ByteForge Technologies', type: 'create', appId: 'offer-letter' } })
 
