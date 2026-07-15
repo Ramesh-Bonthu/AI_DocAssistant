@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -50,6 +51,25 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const app = APPLICATIONS.find((a) => a.id === appId)
   const AppIcon = APP_ICONS[appId] || FileText
 
+  const [userRole, setUserRole] = useState<string>('Super Admin')
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole')
+    if (role) {
+      setUserRole(role)
+    }
+  }, [])
+
+  const filteredNavItems = NAV_ITEMS.filter((item) => {
+    if (userRole === 'Users') {
+      return ['Dashboard', 'Documents', 'History'].includes(item.label)
+    }
+    if (userRole === 'Admin') {
+      return ['Dashboard', 'Templates', 'Documents', 'History', 'Analytics'].includes(item.label)
+    }
+    return true // Super Admin has access to all
+  })
+
   const isActive = (href: string) => pathname?.includes(`/${href}`)
 
   return (
@@ -77,7 +97,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
+        {filteredNavItems.map((item) => {
           const active = isActive(item.href)
           return (
             <Link key={item.href} href={`/app/${appId}/${item.href}`}>

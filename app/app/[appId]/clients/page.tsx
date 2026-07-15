@@ -48,6 +48,13 @@ export default function ClientsPage() {
   const params = useParams()
   const appId = params?.appId as string
 
+  const [userRole, setUserRole] = useState<string>('Super Admin')
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole')
+    if (role) setUserRole(role)
+  }, [])
+
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showModal, setShowModal] = useState(false)
@@ -58,6 +65,20 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm()
+
+  if (userRole !== 'Super Admin') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 p-6 text-center">
+        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-2">
+          <Building2 size={28} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Access Denied</h2>
+        <p className="text-sm text-slate-500 max-w-sm">
+          You do not have the required permissions to view the Clients database. Please contact a Super Admin if you believe this is an error.
+        </p>
+      </div>
+    )
+  }
 
   useEffect(() => {
     if (!appId) return

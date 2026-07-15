@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -39,6 +39,27 @@ export function WorkspaceHeader() {
   const [showProfile, setShowProfile] = useState(false)
   const [notifs, setNotifs] = useState(NOTIFICATIONS)
   const [searchFocused, setSearchFocused] = useState(false)
+
+  const [userName, setUserName] = useState('Ajay Kumar')
+  const [userEmail, setUserEmail] = useState('ajay@docflow.ai')
+  const [userRole, setUserRole] = useState('Super Admin')
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole')
+    if (role) {
+      setUserRole(role)
+      if (role === 'Super Admin') {
+        setUserName('Super Admin')
+        setUserEmail('superadmin@example.com')
+      } else if (role === 'Admin') {
+        setUserName('Workspace Admin')
+        setUserEmail('admin@example.com')
+      } else if (role === 'Users') {
+        setUserName('Standard User')
+        setUserEmail('user@example.com')
+      }
+    }
+  }, [])
 
   const segment = pathname?.split('/').pop() || 'dashboard'
   const page = BREADCRUMB_MAP[segment] || segment
@@ -130,18 +151,20 @@ export function WorkspaceHeader() {
           className="flex items-center gap-2 hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors"
         >
           <Avatar className="w-7 h-7">
-            <AvatarFallback className="bg-blue-600 text-white text-xs font-bold">AK</AvatarFallback>
+            <AvatarFallback className="bg-blue-600 text-white text-xs font-bold">
+              {userName.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium text-slate-700 hidden sm:block">Ajay Kumar</span>
+          <span className="text-sm font-medium text-slate-700 hidden sm:block">{userName}</span>
         </button>
         <AnimatePresence>
           {showProfile && (
             <motion.div initial={{ opacity: 0, y: 4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4, scale: 0.97 }} transition={{ duration: 0.15 }}
               className="absolute right-0 top-10 w-56 bg-white rounded-xl border border-slate-100 shadow-xl z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-100">
-                <p className="text-sm font-semibold text-slate-900">Ajay Kumar</p>
-                <p className="text-xs text-slate-500">ajay@docflow.ai</p>
-                <Badge className="mt-1 text-xs bg-blue-50 text-blue-700 border-blue-100">Pro Plan</Badge>
+                <p className="text-sm font-semibold text-slate-900">{userName}</p>
+                <p className="text-xs text-slate-500">{userEmail}</p>
+                <Badge className="mt-1 text-xs bg-blue-50 text-blue-700 border-blue-100">{userRole}</Badge>
               </div>
               {[
                 { icon: User, label: 'My Profile' },

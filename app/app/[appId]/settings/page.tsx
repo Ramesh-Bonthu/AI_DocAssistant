@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Settings, User, Bell, Shield, Palette, Database, CreditCard, Key } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,27 @@ const SETTING_SECTIONS = [
 ]
 
 export default function SettingsPage() {
+  const [userRole, setUserRole] = useState<string>('Super Admin')
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole')
+    if (role) setUserRole(role)
+  }, [])
+
+  if (userRole === 'Users') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 p-6 text-center">
+        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-2">
+          <Settings size={28} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Access Denied</h2>
+        <p className="text-sm text-slate-500 max-w-sm">
+          You do not have the required permissions to view the settings. Please contact an Admin if you believe this is an error.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 max-w-4xl">
       <div className="mb-6">

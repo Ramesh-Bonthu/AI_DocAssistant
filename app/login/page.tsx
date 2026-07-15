@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Mail, Lock, LogIn, Plus, ShieldCheck, CheckCircle2, User, ArrowRight, Shield } from "lucide-react";
+import { Mail, Lock, LogIn, Plus, ShieldCheck, CheckCircle2, User, Users, ArrowRight, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AuthPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
-  const [loginRole, setLoginRole] = useState("Client");
+  const [loginRole, setLoginRole] = useState("Super Admin");
   
   // Form States
   const [fullName, setFullName] = useState("");
@@ -51,8 +51,18 @@ export default function AuthPage() {
       // Simulate API call
       setTimeout(() => {
         setIsLoading(false);
-        const correctEmail = loginRole === "Client" ? "client@example.com" : "admin@example.com";
-        if (email.toLowerCase() === correctEmail && password === "Password123") {
+        const correctEmail = 
+          loginRole === "Super Admin" ? "superadmin@example.com" :
+          loginRole === "Admin" ? "admin@example.com" :
+          "user@example.com";
+        
+        const isCorrectEmail = 
+          loginRole === "Users"
+            ? (email.toLowerCase() === "user@example.com" || email.toLowerCase() === "users@example.com")
+            : email.toLowerCase() === correctEmail;
+
+        if (isCorrectEmail && password === "Password123") {
+          localStorage.setItem("userRole", loginRole);
           router.push("/");
         } else {
           setError(`Invalid credentials. Try ${correctEmail} / Password123`);
@@ -188,21 +198,22 @@ export default function AuthPage() {
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Login as</label>
                 <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50 mb-4">
-                  {["Client", "Admin"].map((r) => {
+                  {["Super Admin", "Admin", "Users"].map((r) => {
                     const isActive = loginRole === r;
                     return (
                       <button
                         type="button"
                         key={r}
                         onClick={() => setLoginRole(r)}
-                        className={`flex-1 py-2 px-3 flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all ${
+                        className={`flex-1 py-2 px-1.5 flex items-center justify-center gap-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                           isActive
                             ? "bg-white text-blue-600 shadow-sm border border-slate-200/30"
                             : "text-slate-500 hover:text-slate-800"
                         }`}
                       >
-                        {r === "Client" && <User size={16} />}
-                        {r === "Admin" && <Shield size={16} />}
+                        {r === "Super Admin" && <ShieldCheck size={14} />}
+                        {r === "Admin" && <Shield size={14} />}
+                        {r === "Users" && <Users size={14} />}
                         {r}
                       </button>
                     );
@@ -327,7 +338,7 @@ export default function AuthPage() {
 
             {/* Switch Link - Conditional based on selected role in Login view */}
             {isLogin ? (
-              loginRole === "Client" && (
+              loginRole === "Users" && (
                 <div className="text-center mt-6">
                   <p className="text-sm text-slate-500">
                     Don't have an account?{" "}
@@ -371,8 +382,9 @@ export default function AuthPage() {
               <div className="mt-8 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-slate-500">
                 <p className="text-[10px] font-bold text-slate-400 mb-2 tracking-wider">DEMO CREDENTIALS</p>
                 <div className="space-y-1 text-xs">
-                  <p><span className="font-semibold text-slate-600">Client:</span> client@example.com / Password123</p>
+                  <p><span className="font-semibold text-slate-600">Super Admin:</span> superadmin@example.com / Password123</p>
                   <p><span className="font-semibold text-slate-600">Admin:</span> admin@example.com / Password123</p>
+                  <p><span className="font-semibold text-slate-600">Users:</span> user@example.com / Password123</p>
                 </div>
               </div>
             )}
