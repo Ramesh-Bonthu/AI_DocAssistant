@@ -16,18 +16,14 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   invoice: Receipt,
   'offer-letter': FileText,
   'hr-documents': Users,
-  'question-generator': HelpCircle,
   certificates: Award,
-  'resume-builder': UserCircle,
 }
 
 const GRADIENT_PREVIEWS: Record<string, string> = {
   invoice: 'from-blue-400 to-blue-600',
   'offer-letter': 'from-emerald-400 to-emerald-600',
   'hr-documents': 'from-violet-400 to-violet-600',
-  'question-generator': 'from-amber-400 to-orange-500',
   certificates: 'from-rose-400 to-red-600',
-  'resume-builder': 'from-cyan-400 to-cyan-600',
 }
 
 interface TemplateItem {

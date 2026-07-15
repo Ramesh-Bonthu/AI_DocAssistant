@@ -25,9 +25,7 @@ const apps = [
   { icon: Receipt, name: 'Invoice Automation', desc: 'GST invoices with auto calculations', color: 'text-blue-600', bg: 'from-blue-50 to-blue-100', href: '/app/invoice' },
   { icon: FileText, name: 'Offer Letter Generator', desc: 'Professional employment offers', color: 'text-emerald-600', bg: 'from-emerald-50 to-emerald-100', href: '/app/offer-letter' },
   { icon: Users, name: 'HR Documents', desc: 'Complete HR documentation suite', color: 'text-violet-600', bg: 'from-violet-50 to-violet-100', href: '/app/hr-documents' },
-  { icon: HelpCircle, name: 'Question Generator', desc: 'AI-powered exam paper creation', color: 'text-amber-600', bg: 'from-amber-50 to-amber-100', href: '/app/question-generator' },
   { icon: Award, name: 'Certificates', desc: 'Design elegant certificates', color: 'text-rose-600', bg: 'from-rose-50 to-rose-100', href: '/app/certificates' },
-  { icon: UserCircle, name: 'Resume Builder', desc: 'ATS-optimized professional resumes', color: 'text-cyan-600', bg: 'from-cyan-50 to-cyan-100', href: '/app/resume-builder' },
 ]
 
 const stats = [

@@ -41,15 +41,6 @@ async function main() {
       category: 'HR',
     },
     {
-      id: 'question-generator',
-      name: 'Question Generator',
-      description: 'Generate exam papers, quizzes, and assessments with AI assistance.',
-      icon: 'HelpCircle',
-      color: '#D97706',
-      gradient: 'from-amber-500 to-orange-600',
-      category: 'Education',
-    },
-    {
       id: 'certificates',
       name: 'Certificates',
       description: 'Design and generate professional certificates for courses, achievements, and events.',
@@ -57,15 +48,6 @@ async function main() {
       color: '#DC2626',
       gradient: 'from-rose-500 to-red-600',
       category: 'Education',
-    },
-    {
-      id: 'resume-builder',
-      name: 'Resume Builder',
-      description: 'Build ATS-friendly resumes with professional templates and AI suggestions.',
-      icon: 'UserCircle',
-      color: '#0891B2',
-      gradient: 'from-cyan-500 to-cyan-700',
-      category: 'Career',
     },
     {
       id: 'resume-analyzer',
@@ -102,15 +84,6 @@ async function main() {
       color: '#16A34A',
       gradient: 'from-green-500 to-green-700',
       category: 'Finance',
-    },
-    {
-      id: 'id-card',
-      name: 'ID Card Generator',
-      description: 'Design and generate professional employee and student ID cards.',
-      icon: 'CreditCard',
-      color: '#9333EA',
-      gradient: 'from-purple-500 to-purple-700',
-      category: 'Design',
     },
   ]
 
@@ -240,30 +213,7 @@ async function main() {
     await prisma.monthlyMetric.create({ data: m })
   }
 
-  // ==================== 4. QUESTION GENERATOR ====================
-  console.log('Seeding Question Generator...')
-  const seededEduClients = [
-    await prisma.client.create({
-      data: {
-        company: 'EduSpark Institute', contactPerson: 'Prof. Rajan Gupta', email: 'rajan@eduspark.edu', phone: '+91 10987 65432',
-        gstNumber: '10AABCE9012J9Z9', address: '100 Knowledge Park', city: 'Jaipur', country: 'India',
-        postalCode: '302021', paymentTerms: 'Net 30', notes: 'Educational client', logo: 'ES', documentsCount: 2, status: 'active',
-        revenue: 520000.0, appId: 'question-generator'
-      }
-    })
-  ]
 
-  await prisma.document.create({
-    data: { title: 'Mathematics Question Paper - Class 12', client: 'EduSpark Institute', status: 'completed', size: '156 KB', pages: 4, appId: 'question-generator', clientId: seededEduClients[0].id }
-  })
-
-  await prisma.template.create({ data: { name: 'MCQ Question Paper', description: 'Objective test template', preview: '/templates/qp-1.jpg', usageCount: 178, isFavorite: false, tags: 'MCQ,Objective', appId: 'question-generator' } })
-
-  await prisma.activity.create({ data: { action: 'Generated Paper', document: 'Mathematics Question Paper', client: 'EduSpark Institute', type: 'create', appId: 'question-generator' } })
-
-  for (const m of createMonthsForApp('question-generator', 30, 25000)) {
-    await prisma.monthlyMetric.create({ data: m })
-  }
 
   // ==================== 5. CERTIFICATES ====================
   console.log('Seeding Certificates...')
@@ -290,30 +240,7 @@ async function main() {
     await prisma.monthlyMetric.create({ data: m })
   }
 
-  // ==================== 6. RESUME BUILDER ====================
-  console.log('Seeding Resume Builder...')
-  const seededResumeClients = [
-    await prisma.client.create({
-      data: {
-        company: 'Priya Nair (Individual)', contactPerson: 'Priya Nair', email: 'priya@outlook.com', phone: '+91 90000 22222',
-        gstNumber: 'None', address: 'Cyber Towers', city: 'Hyderabad', country: 'India',
-        postalCode: '500081', paymentTerms: 'Prepaid', notes: 'Individual build', logo: 'PN', documentsCount: 1, status: 'active',
-        revenue: 1800.0, appId: 'resume-builder'
-      }
-    })
-  ]
 
-  await prisma.document.create({
-    data: { title: 'Resume - Priya Nair (Senior Dev)', client: 'Priya Nair (Individual)', status: 'draft', size: '180 KB', pages: 2, appId: 'resume-builder', clientId: seededResumeClients[0].id }
-  })
-
-  await prisma.template.create({ data: { name: 'ATS Resume Classic', description: 'ATS optimized resume layout', preview: '/templates/resume-1.jpg', usageCount: 521, isFavorite: true, tags: 'ATS,Classic', appId: 'resume-builder' } })
-
-  await prisma.activity.create({ data: { action: 'Created draft', document: 'Resume - Priya Nair', client: 'Priya Nair', type: 'edit', appId: 'resume-builder' } })
-
-  for (const m of createMonthsForApp('resume-builder', 35, 12000)) {
-    await prisma.monthlyMetric.create({ data: m })
-  }
 
   // ==================== 7. RESUME ANALYZER ====================
   console.log('Seeding Resume Analyzer...')
@@ -415,32 +342,7 @@ async function main() {
     await prisma.monthlyMetric.create({ data: m })
   }
 
-  // ==================== 11. ID CARD GENERATOR ====================
-  console.log('Seeding ID Card Generator...')
-  const seededIdClients = [
-    await prisma.client.create({
-      data: {
-        company: 'ByteForge Technologies', contactPerson: 'Vikram Singh', email: 'vikram@byteforge.io', phone: '+91 43210 98765',
-        gstNumber: '09AABCB6789G6Z6', address: '5 IT Park', city: 'Noida', country: 'India',
-        postalCode: '201309', paymentTerms: 'Net 15', notes: 'Employee identity cards', logo: 'BF', documentsCount: 1, status: 'active',
-        revenue: 45000.0, appId: 'id-card'
-      }
-    })
-  ]
-
-  await prisma.document.create({
-    data: { title: 'ID Card - Employee Batch 2026', client: 'ByteForge Technologies', status: 'completed', size: '320 KB', pages: 5, appId: 'id-card', clientId: seededIdClients[0].id }
-  })
-
-  await prisma.template.create({ data: { name: 'Corporate ID Card', description: 'Professional ID template with photo holder', preview: '/templates/id-1.jpg', usageCount: 89, isFavorite: false, tags: 'RFID,Corporate', appId: 'id-card' } })
-
-  await prisma.activity.create({ data: { action: 'Generated ID cards', document: 'ID Card - Employee Batch 2026', client: 'ByteForge Technologies', type: 'create', appId: 'id-card' } })
-
-  for (const m of createMonthsForApp('id-card', 22, 15000)) {
-    await prisma.monthlyMetric.create({ data: m })
-  }
-
-  console.log('Database seeding completed successfully for all 11 apps!')
+  console.log('Database seeding completed successfully!')
 }
 
 main()

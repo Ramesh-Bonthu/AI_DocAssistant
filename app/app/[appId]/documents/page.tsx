@@ -27,23 +27,18 @@ const TYPE_LABELS: Record<string, string> = {
   invoice: 'Invoice',
   'offer-letter': 'Offer Letter',
   'hr-documents': 'HR Document',
-  'question-generator': 'Question Paper',
   certificates: 'Certificate',
-  'resume-builder': 'Resume',
   'resume-analyzer': 'Resume Analysis',
   'experience-letter': 'Experience Letter',
   'appointment-letter': 'Appointment Letter',
   'salary-slip': 'Salary Slip',
-  'id-card': 'ID Card',
 }
 
 const TYPE_COLORS: Record<string, string> = {
   invoice: 'bg-blue-50 text-blue-600',
   'offer-letter': 'bg-emerald-50 text-emerald-600',
   'hr-documents': 'bg-violet-50 text-violet-600',
-  'question-generator': 'bg-amber-50 text-amber-600',
   certificates: 'bg-rose-50 text-rose-600',
-  'resume-builder': 'bg-cyan-50 text-cyan-600',
 }
 
 interface DocumentItem {

@@ -245,14 +245,11 @@ function getFormTitle(appId: string): string {
     invoice: 'Invoice Details',
     'offer-letter': 'Offer Letter Details',
     'hr-documents': 'HR Document Details',
-    'question-generator': 'Question Paper Details',
     certificates: 'Certificate Details',
-    'resume-builder': 'Resume Details',
     'resume-analyzer': 'Resume Analysis',
     'experience-letter': 'Experience Letter',
     'appointment-letter': 'Appointment Letter',
     'salary-slip': 'Salary Slip Details',
-    'id-card': 'ID Card Details',
   }
   return titles[appId] || 'Document Details'
 }
@@ -288,29 +285,12 @@ function getFormFields(appId: string) {
       { name: 'effectiveDate', label: 'Effective Date', placeholder: '', inputType: 'date' },
       { name: 'reason', label: 'Reason / Details', placeholder: 'Describe the reason...', type: 'textarea' },
     ],
-    'question-generator': [
-      { name: 'subject', label: 'Subject', placeholder: 'Mathematics' },
-      { name: 'topics', label: 'Topics', placeholder: 'Algebra, Calculus, Statistics', type: 'textarea' },
-      { name: 'difficulty', label: 'Difficulty', placeholder: '', type: 'select', options: ['Easy', 'Medium', 'Hard', 'Mixed'] },
-      { name: 'marks', label: 'Total Marks', placeholder: '100', inputType: 'number' },
-      { name: 'questionType', label: 'Question Type', placeholder: '', type: 'select', options: ['MCQ', 'Short Answer', 'Long Answer', 'Mixed'] },
-      { name: 'duration', label: 'Duration (mins)', placeholder: '180', inputType: 'number' },
-    ],
     certificates: [
       { name: 'studentName', label: 'Student / Recipient Name', placeholder: 'Priya Nair' },
       { name: 'course', label: 'Course / Program', placeholder: 'Full Stack Web Development' },
       { name: 'duration', label: 'Duration', placeholder: '6 Months' },
       { name: 'certificateType', label: 'Certificate Type', placeholder: '', type: 'select', options: ['Completion', 'Achievement', 'Participation', 'Excellence', 'Merit'] },
       { name: 'issuedBy', label: 'Issued By', placeholder: 'EduSpark Institute' },
-    ],
-    'resume-builder': [
-      { name: 'fullName', label: 'Full Name', placeholder: 'Priya Nair' },
-      { name: 'email', label: 'Email', placeholder: 'priya@email.com', inputType: 'email' },
-      { name: 'phone', label: 'Phone', placeholder: '+91 87654 32109' },
-      { name: 'designation', label: 'Current / Target Role', placeholder: 'Senior Software Engineer' },
-      { name: 'education', label: 'Education', placeholder: 'B.Tech CS, NIT Calicut, 2017', type: 'textarea' },
-      { name: 'skills', label: 'Skills', placeholder: 'React, TypeScript, Node.js', type: 'textarea' },
-      { name: 'experience', label: 'Experience', placeholder: 'Company, Role, Duration, Achievements', type: 'textarea' },
     ],
   }
 

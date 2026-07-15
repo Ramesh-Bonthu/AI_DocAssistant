@@ -2,14 +2,11 @@ export type AppType =
   | 'invoice'
   | 'offer-letter'
   | 'hr-documents'
-  | 'question-generator'
   | 'certificates'
-  | 'resume-builder'
   | 'resume-analyzer'
   | 'experience-letter'
   | 'appointment-letter'
   | 'salary-slip'
-  | 'id-card'
 
 export interface Application {
   id: AppType

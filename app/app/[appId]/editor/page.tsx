@@ -206,7 +206,6 @@ function getInitialContent(appId: string): string {
   </svg>
 </div>`,
     certificates: `<h1 style="text-align: center;">Certificate of Completion</h1><br/><p style="text-align: center;">This is to certify that</p><br/><h2 style="text-align: center;">Priya Nair</h2><br/><p style="text-align: center;">has successfully completed the</p><br/><h2 style="text-align: center;">Full Stack Web Development Program</h2><br/><p style="text-align: center;">Duration: 6 Months | June 2024</p><br/><p style="text-align: center;">Issued by <strong>EduSpark Institute</strong></p>`,
-    'resume-builder': `<h1>Priya Nair</h1><p>Senior Software Engineer | priya@email.com | +91 87654 32109 | LinkedIn</p><hr/><h2>Professional Summary</h2><p>Experienced software engineer with 6+ years building scalable web applications using React, Node.js, and AWS. Passionate about clean code and user experience.</p><hr/><h2>Experience</h2><p><strong>Senior Frontend Engineer</strong> — GlobalEdge Consulting (2021–Present)</p><ul><li>Led a team of 5 engineers to rebuild the core platform</li><li>Reduced page load time by 60% through optimization</li><li>Implemented CI/CD pipeline with 99.9% uptime</li></ul><hr/><h2>Education</h2><p><strong>B.Tech Computer Science</strong> — NIT Calicut (2017)</p><hr/><h2>Skills</h2><p>React · TypeScript · Node.js · PostgreSQL · AWS · Docker · Git</p>`,
   }
   return contents[appId] || `<h1>New Document</h1><p>Start typing your document here...</p>`
 }

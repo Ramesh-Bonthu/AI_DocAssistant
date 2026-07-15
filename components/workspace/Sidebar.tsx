@@ -29,14 +29,11 @@ const APP_ICONS: Record<string, React.ElementType> = {
   invoice: Receipt,
   'offer-letter': FileText,
   'hr-documents': Users,
-  'question-generator': HelpCircle,
   certificates: Award,
-  'resume-builder': UserCircle,
   'resume-analyzer': BarChart,
   'experience-letter': Briefcase,
   'appointment-letter': ClipboardList,
   'salary-slip': Banknote,
-  'id-card': CreditCard,
 }
 
 interface SidebarProps {
