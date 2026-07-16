@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getDocuments, createDocument, deleteDocument } from '@/backend/src/services'
+import { getDocuments, createDocument, deleteDocument, updateDocument } from '@/backend/src/services'
 
 export async function GET(
   request: Request,
@@ -64,3 +64,29 @@ export async function DELETE(
     )
   }
 }
+
+export async function PUT(
+  request: Request,
+  { params }: { params: { appId: string } }
+) {
+  const appId = params.appId
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get('id')
+
+  if (!id) {
+    return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
+  }
+
+  try {
+    const body = await request.json()
+    const updated = await updateDocument(appId, id, body)
+    return NextResponse.json(updated)
+  } catch (error: any) {
+    console.error(`Error updating document ${id} for ${appId}:`, error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to update document' },
+      { status: 500 }
+    )
+  }
+}
+

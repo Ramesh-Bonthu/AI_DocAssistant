@@ -45,6 +45,10 @@ model Client {
   revenue        Float       @default(0.0)
   createdAt      DateTime    @default(now())
   documents      Document[]
+  resumeText     String?
+  targetJob      String?
+  atsScore       Int?
+  atsAnalysis    String?     // Stored as a JSON string
 }
 
 model Document {

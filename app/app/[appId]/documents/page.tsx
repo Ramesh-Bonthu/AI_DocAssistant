@@ -6,11 +6,14 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   Search, Plus, Download, Copy, Pencil, Trash2, MoreHorizontal,
-  FileText, Archive, Share2, CheckCircle, FileEdit, Loader2
+  FileText, Archive, Share2, CheckCircle, FileEdit, Loader2, X, Check
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
@@ -60,6 +63,62 @@ export default function DocumentsPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'draft' | 'completed' | 'shared' | 'archived'>('all')
   const [docs, setDocs] = useState<DocumentItem[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingDoc, setEditingDoc] = useState<DocumentItem | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editClientName, setEditClientName] = useState('')
+  const [editStatus, setEditStatus] = useState<'draft' | 'completed' | 'shared' | 'archived'>('draft')
+  const [updating, setUpdating] = useState(false)
+  const [editErrorMsg, setEditErrorMsg] = useState('')
+
+  const handleEditClick = (doc: DocumentItem) => {
+    setEditingDoc(doc)
+    setEditTitle(doc.title)
+    setEditClientName(doc.client)
+    setEditStatus(doc.status)
+    setShowEditModal(true)
+  }
+
+  const handleUpdateDocument = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingDoc) return
+    if (!editTitle.trim() || !editClientName.trim()) {
+      setEditErrorMsg('Title and Client are required')
+      return
+    }
+    setEditErrorMsg('')
+    setUpdating(true)
+
+    try {
+      const res = await fetch(`/api/app/${appId}/documents?id=${editingDoc.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          client: editClientName.trim(),
+          status: editStatus,
+        }),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Failed to update document')
+      }
+
+      const updated = await res.json()
+      setDocs((prev) => prev.map((d) => d.id === editingDoc.id ? { ...d, ...updated } : d))
+      setShowEditModal(false)
+      setEditingDoc(null)
+    } catch (err: any) {
+      setEditErrorMsg(err.message || 'An error occurred')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
 
   useEffect(() => {
     if (!appId) return
@@ -193,9 +252,12 @@ export default function DocumentsPage() {
                   <DropdownMenuContent align="end" className="rounded-xl w-44">
                     <Link href={`/app/${appId}/editor`}>
                       <DropdownMenuItem className="text-sm rounded-lg">
-                        <Pencil size={14} className="mr-2" /> Edit
+                        <FileEdit size={14} className="mr-2" /> Edit Content
                       </DropdownMenuItem>
                     </Link>
+                    <DropdownMenuItem className="text-sm rounded-lg" onClick={() => handleEditClick(doc)}>
+                      <Pencil size={14} className="mr-2" /> Edit Details
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="text-sm rounded-lg">
                       <Download size={14} className="mr-2" /> Download PDF
                     </DropdownMenuItem>
@@ -230,6 +292,74 @@ export default function DocumentsPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Document Modal */}
+      <Dialog open={showEditModal} onOpenChange={(open) => {
+        setShowEditModal(open)
+        if (!open) {
+          setEditingDoc(null)
+          setEditErrorMsg('')
+        }
+      }}>
+        <DialogContent className="max-w-md rounded-2xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Edit Document Details</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateDocument} className="space-y-4 mt-2">
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Document Title *</Label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Document Title"
+                className="rounded-xl"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Client / Candidate Name *</Label>
+              <Input
+                value={editClientName}
+                onChange={(e) => setEditClientName(e.target.value)}
+                placeholder="Client Name"
+                className="rounded-xl"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Status</Label>
+              <Select value={editStatus} onValueChange={(v: any) => setEditStatus(v)}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="shared">Shared</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {editErrorMsg && (
+              <p className="text-xs font-semibold text-red-500">{editErrorMsg}</p>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" disabled={updating} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 shadow-blue">
+                {updating ? 'Saving...' : (
+                  <>
+                    <Check size={15} className="mr-1.5" /> Save Changes
+                  </>
+                )}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => { setShowEditModal(false); setEditingDoc(null); }} className="flex-1 rounded-xl h-10 border-slate-200">
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

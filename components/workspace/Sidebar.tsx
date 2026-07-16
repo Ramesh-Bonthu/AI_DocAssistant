@@ -59,6 +59,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   }, [])
 
   const filteredNavItems = NAV_ITEMS.filter((item) => {
+    if (appId === 'resume-analyzer' && item.label === 'Clients') {
+      return true
+    }
     if (userRole === 'Users') {
       return ['Dashboard', 'Documents', 'History'].includes(item.label)
     }
@@ -113,12 +116,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 'sidebar-item',
                 active ? 'sidebar-item-active' : 'sidebar-item-inactive',
                 collapsed && 'justify-center px-0 py-3'
-              )} title={collapsed ? item.label : undefined}>
+              )} title={collapsed ? (item.label === 'Clients' && appId === 'resume-analyzer' ? 'Candidates' : item.label) : undefined}>
                 <item.icon size={18} className={cn('flex-shrink-0', active ? 'text-white' : 'text-slate-500')} />
                 <AnimatePresence>
                   {!collapsed && (
                     <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="whitespace-nowrap">
-                      {item.label}
+                      {item.label === 'Clients' && appId === 'resume-analyzer' ? 'Candidates' : item.label}
                     </motion.span>
                   )}
                 </AnimatePresence>

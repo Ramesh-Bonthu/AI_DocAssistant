@@ -146,7 +146,7 @@ export function EditorToolbar({ editor, onSave, saving, saved, appId, onExport }
         <Button size="sm" onClick={onSave} className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
           <Save size={13} className="mr-1" /> Save
         </Button>
-        <Button size="sm" variant="outline" onClick={onExport} className="h-7 px-3 text-xs rounded-lg border-slate-200 text-slate-700">
+        <Button size="sm" variant="outline" onClick={onExport || (() => window.print())} className="h-7 px-3 text-xs rounded-lg border-slate-200 text-slate-700">
           <Download size={13} className="mr-1" /> Export
         </Button>
         <Button size="sm" variant="outline" className="h-7 px-3 text-xs rounded-lg border-slate-200 text-slate-700">

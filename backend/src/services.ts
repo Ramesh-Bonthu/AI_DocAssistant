@@ -1,4 +1,6 @@
 import prisma from './client'
+import * as fs from 'fs'
+import * as path from 'path'
 
 /**
  * Get dashboard stats, monthly metrics, document type breakdown, 
@@ -265,6 +267,43 @@ export async function deleteDocument(appId: string, documentId: string) {
   return { success: true }
 }
 
+// Helper to write to JSON fallback
+function saveToJSONFallback(clientId: string, data: any) {
+  try {
+    const dirPath = path.join(process.cwd(), 'backend', 'data')
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true })
+    }
+    const filePath = path.join(dirPath, 'client-resumes-fallback.json')
+    let fallbackData: Record<string, any> = {}
+    if (fs.existsSync(filePath)) {
+      fallbackData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+    }
+    fallbackData[clientId] = {
+      ...(fallbackData[clientId] || {}),
+      ...data,
+      updatedAt: new Date().toISOString()
+    }
+    fs.writeFileSync(filePath, JSON.stringify(fallbackData, null, 2), 'utf-8')
+  } catch (err) {
+    console.error('Failed to write to JSON fallback:', err)
+  }
+}
+
+// Helper to read from JSON fallback
+function getFromJSONFallback(clientId: string) {
+  try {
+    const filePath = path.join(process.cwd(), 'backend', 'data', 'client-resumes-fallback.json')
+    if (fs.existsSync(filePath)) {
+      const fallbackData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      return fallbackData[clientId] || null
+    }
+  } catch (err) {
+    console.error('Failed to read from JSON fallback:', err)
+  }
+  return null
+}
+
 /**
  * Get all clients for a specific application workspace.
  */
@@ -278,17 +317,36 @@ export async function getClients(appId: string, search: string = '') {
     ]
   }
 
-  return prisma.client.findMany({
+  const dbClients = await prisma.client.findMany({
     where: whereClause,
     orderBy: { company: 'asc' }
   })
+
+  // Merge with fallback data
+  try {
+    const filePath = path.join(process.cwd(), 'backend', 'data', 'client-resumes-fallback.json')
+    if (fs.existsSync(filePath)) {
+      const fallbackData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      return dbClients.map(c => {
+        const extra = fallbackData[c.id] || {}
+        return {
+          ...c,
+          ...extra
+        }
+      })
+    }
+  } catch (e) {
+    console.error('Error merging fallback client data:', e)
+  }
+
+  return dbClients
 }
 
 /**
  * Create a new client in the database.
  */
 export async function createClient(appId: string, data: any) {
-  return prisma.client.create({
+  const client = await prisma.client.create({
     data: {
       appId,
       company: data.company,
@@ -296,10 +354,10 @@ export async function createClient(appId: string, data: any) {
       email: data.email,
       phone: data.phone,
       gstNumber: data.gstNumber || 'None',
-      address: data.address,
-      city: data.city,
-      country: data.country,
-      postalCode: data.postalCode,
+      address: data.address || 'Address',
+      city: data.city || 'Bengaluru',
+      country: data.country || 'India',
+      postalCode: data.postalCode || '560001',
       paymentTerms: data.paymentTerms || 'Net 30',
       notes: data.notes || '',
       logo: data.logo || data.company.substring(0, 2).toUpperCase(),
@@ -307,6 +365,103 @@ export async function createClient(appId: string, data: any) {
       revenue: parseFloat(data.revenue) || 0.0
     }
   })
+
+  // Save ATS properties to fallback JSON if they exist
+  if (data.resumeText !== undefined || data.targetJob !== undefined || data.atsScore !== undefined || data.atsAnalysis !== undefined) {
+    saveToJSONFallback(client.id, {
+      resumeText: data.resumeText,
+      targetJob: data.targetJob,
+      atsScore: data.atsScore,
+      atsAnalysis: data.atsAnalysis
+    })
+  }
+
+  return {
+    ...client,
+    resumeText: data.resumeText,
+    targetJob: data.targetJob,
+    atsScore: data.atsScore,
+    atsAnalysis: data.atsAnalysis
+  }
+}
+
+/**
+ * Update a client in the database or JSON fallback.
+ */
+export async function updateClient(clientId: string, data: any) {
+  // Always save to JSON fallback first just in case DB doesn't have the resume fields yet
+  if (data.resumeText !== undefined || data.targetJob !== undefined || data.atsScore !== undefined || data.atsAnalysis !== undefined) {
+    saveToJSONFallback(clientId, {
+      resumeText: data.resumeText,
+      targetJob: data.targetJob,
+      atsScore: data.atsScore,
+      atsAnalysis: data.atsAnalysis
+    })
+  }
+
+  try {
+    const updateData: any = {
+      company: data.company,
+      contactPerson: data.contactPerson,
+      email: data.email,
+      phone: data.phone,
+      gstNumber: data.gstNumber,
+      address: data.address,
+      city: data.city,
+      country: data.country,
+      postalCode: data.postalCode,
+      paymentTerms: data.paymentTerms,
+      notes: data.notes,
+      logo: data.logo,
+      status: data.status,
+      revenue: data.revenue !== undefined ? parseFloat(data.revenue) : undefined,
+    }
+
+    // Only set these if DB schema has been successfully migrated.
+    // We try to set them and catch errors.
+    if (data.resumeText !== undefined) updateData.resumeText = data.resumeText
+    if (data.targetJob !== undefined) updateData.targetJob = data.targetJob
+    if (data.atsScore !== undefined) updateData.atsScore = parseInt(data.atsScore)
+    if (data.atsAnalysis !== undefined) {
+      updateData.atsAnalysis = typeof data.atsAnalysis === 'object' ? JSON.stringify(data.atsAnalysis) : data.atsAnalysis
+    }
+
+    return await prisma.client.update({
+      where: { id: clientId },
+      data: updateData
+    })
+  } catch (error) {
+    console.warn(`Prisma update for client ${clientId} failed, falling back to local file storage:`, error)
+    
+    // We try to update standard fields first (excluding the new fields)
+    const fallbackUpdateData: any = {
+      company: data.company,
+      contactPerson: data.contactPerson,
+      email: data.email,
+      phone: data.phone,
+      gstNumber: data.gstNumber,
+      address: data.address,
+      city: data.city,
+      country: data.country,
+      postalCode: data.postalCode,
+      paymentTerms: data.paymentTerms,
+      notes: data.notes,
+      logo: data.logo,
+      status: data.status,
+      revenue: data.revenue !== undefined ? parseFloat(data.revenue) : undefined,
+    }
+    
+    const dbClient = await prisma.client.update({
+      where: { id: clientId },
+      data: fallbackUpdateData
+    })
+
+    const fallback = getFromJSONFallback(clientId) || {}
+    return {
+      ...dbClient,
+      ...fallback
+    }
+  }
 }
 
 /**
@@ -435,3 +590,63 @@ export async function deleteTemplate(appId: string, templateId: string) {
     }
   })
 }
+
+export async function deleteClient(appId: string, clientId: string) {
+  const client = await prisma.client.findUnique({
+    where: { id: clientId }
+  })
+
+  if (!client || client.appId !== appId) {
+    throw new Error('Client not found in this workspace')
+  }
+
+  await prisma.client.delete({
+    where: { id: clientId }
+  })
+
+  // Delete from local file fallback if present
+  try {
+    const filePath = path.join(process.cwd(), 'backend', 'data', 'client-resumes-fallback.json')
+    if (fs.existsSync(filePath)) {
+      const fallbackData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      if (fallbackData[clientId]) {
+        delete fallbackData[clientId]
+        fs.writeFileSync(filePath, JSON.stringify(fallbackData, null, 2), 'utf-8')
+      }
+    }
+  } catch (err) {
+    console.error('Failed to delete client from JSON fallback:', err)
+  }
+
+  return { success: true }
+}
+
+export async function updateTemplate(appId: string, templateId: string, data: { name: string; description: string; tags?: string[] }) {
+  const updateData: any = {
+    name: data.name,
+    description: data.description,
+  }
+  if (data.tags) {
+    updateData.tags = data.tags.join(',')
+  }
+  return await prisma.template.update({
+    where: {
+      id: templateId,
+      appId
+    },
+    data: updateData
+  })
+}
+
+export async function updateDocument(appId: string, docId: string, data: { title?: string; client?: string; status?: string }) {
+  return await prisma.document.update({
+    where: {
+      id: docId,
+      appId
+    },
+    data
+  })
+}
+
+
+

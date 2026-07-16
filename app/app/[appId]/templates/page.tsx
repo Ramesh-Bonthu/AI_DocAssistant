@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Star, ArrowRight, Layout, Receipt, FileText,
-  Award, UserCircle, HelpCircle, Users, Loader2, Plus, X, Trash2
+  Award, UserCircle, HelpCircle, Users, Loader2, Plus, X, Trash2, Pencil
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -60,6 +60,68 @@ export default function TemplatesPage() {
   const [saving, setSaving] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<TemplateItem | null>(null)
+  const [editTemplateName, setEditTemplateName] = useState('')
+  const [editTemplateDesc, setEditTemplateDesc] = useState('')
+  const [editTemplateTags, setEditTemplateTags] = useState('')
+  const [updating, setUpdating] = useState(false)
+  const [editErrorMsg, setEditErrorMsg] = useState('')
+
+  const handleEditClick = (template: TemplateItem) => {
+    setEditingTemplate(template)
+    setEditTemplateName(template.name)
+    setEditTemplateDesc(template.description)
+    setEditTemplateTags(template.tags.join(', '))
+    setShowEditModal(true)
+  }
+
+  const handleUpdateTemplate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingTemplate) return
+    if (!editTemplateName.trim() || !editTemplateDesc.trim()) {
+      setEditErrorMsg('Name and description are required')
+      return
+    }
+    setEditErrorMsg('')
+    setUpdating(true)
+
+    try {
+      const res = await fetch(`/api/app/${appId}/templates/${editingTemplate.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editTemplateName.trim(),
+          description: editTemplateDesc.trim(),
+          tags: editTemplateTags.split(',').map((t) => t.trim()).filter(Boolean),
+        }),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Failed to update template')
+      }
+
+      const updated = await res.json()
+      const formatted = {
+        ...updated,
+        type: updated.appId || appId,
+        tags: typeof updated.tags === 'string' ? updated.tags.split(',') : (updated.tags || [])
+      }
+
+      setTemplates((prev) => prev.map((t) => t.id === editingTemplate.id ? formatted : t))
+      setShowEditModal(false)
+      setEditingTemplate(null)
+    } catch (err: any) {
+      setEditErrorMsg(err.message || 'An error occurred')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+
   const handleCreateTemplate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTemplateName.trim() || !newTemplateDesc.trim()) {
@@ -91,6 +153,7 @@ export default function TemplatesPage() {
       // Wrap single tags string back to array if it comes as comma-separated string from DB
       const formatted = {
         ...created,
+        type: created.appId || appId,
         tags: typeof created.tags === 'string' ? created.tags.split(',') : (created.tags || [])
       }
       setTemplates((prev) => [...prev, formatted])
@@ -128,9 +191,13 @@ export default function TemplatesPage() {
         if (!res.ok) throw new Error('Failed to fetch templates')
         return res.json()
       })
-      .then((data: TemplateItem[]) => {
-        setTemplates(data)
-        setFavorites(new Set(data.filter((t) => t.isFavorite).map((t) => t.id)))
+      .then((data: any[]) => {
+        const mapped = data.map((t) => ({
+          ...t,
+          type: t.appId || appId
+        }))
+        setTemplates(mapped)
+        setFavorites(new Set(mapped.filter((t) => t.isFavorite).map((t) => t.id)))
         setLoading(false)
       })
       .catch((err) => {
@@ -211,31 +278,70 @@ export default function TemplatesPage() {
             <motion.div key={template.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-slate-200 transition-all hover:-translate-y-0.5 group">
               {/* Preview */}
-              <div className={`bg-gradient-to-br ${gradient} h-32 relative flex items-center justify-center overflow-hidden`}>
-                <div className="absolute inset-0 bg-white/10" />
-                <div className="relative bg-white/95 rounded-lg p-3 w-24 shadow-lg">
-                  <div className="h-1.5 w-16 bg-slate-200 rounded mb-1.5" />
-                  <div className="h-1 w-12 bg-slate-100 rounded mb-2" />
-                  <div className="space-y-0.5">
-                    {[...Array(4)].map((_, j) => (
-                      <div key={j} className="h-0.5 bg-slate-100 rounded" style={{ width: `${80 - j * 10}%` }} />
-                    ))}
-                  </div>
+              {template.type === 'offer-letter' ? (
+                <div className="h-32 relative overflow-hidden border-b border-slate-100 bg-slate-50 flex items-center justify-center">
+                  <img 
+                    src="/templates/offer-letter.png" 
+                    alt={template.name} 
+                    className="w-full h-full object-cover object-top" 
+                  />
+
+                  {/* Absolute Buttons (Delete/Edit/Fav) */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(template.id) }}
+                    className="absolute top-2 left-2 w-6 h-6 bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-lg flex items-center justify-center transition-colors shadow-sm z-10"
+                    title="Delete template"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEditClick(template) }}
+                    className="absolute top-2 left-9 w-6 h-6 bg-white/90 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-lg flex items-center justify-center transition-colors shadow-sm z-10"
+                    title="Edit template"
+                  >
+                    <Pencil size={11} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFav(template.id) }}
+                    className="absolute top-2 right-2 w-6 h-6 bg-white/90 rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-sm z-10"
+                  >
+                    <Star size={11} className={isFav ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(template.id) }}
-                  className="absolute top-3 left-3 w-7 h-7 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg flex items-center justify-center transition-colors shadow-sm"
-                  title="Delete template"
-                >
-                  <Trash2 size={13} />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); toggleFav(template.id) }}
-                  className="absolute top-3 right-3 w-7 h-7 bg-white/90 rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-sm"
-                >
-                  <Star size={13} className={isFav ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
-                </button>
-              </div>
+              ) : (
+                <div className={`bg-gradient-to-br ${gradient} h-32 relative flex items-center justify-center overflow-hidden`}>
+                  <div className="absolute inset-0 bg-white/10" />
+                  <div className="relative bg-white/95 rounded-lg p-3 w-24 shadow-lg">
+                    <div className="h-1.5 w-16 bg-slate-200 rounded mb-1.5" />
+                    <div className="h-1 w-12 bg-slate-100 rounded mb-2" />
+                    <div className="space-y-0.5">
+                      {[...Array(4)].map((_, j) => (
+                        <div key={j} className="h-0.5 bg-slate-100 rounded" style={{ width: `${80 - j * 10}%` }} />
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(template.id) }}
+                    className="absolute top-3 left-3 w-7 h-7 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                    title="Delete template"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEditClick(template) }}
+                    className="absolute top-3 left-12 w-7 h-7 bg-white/90 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                    title="Edit template"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFav(template.id) }}
+                    className="absolute top-3 right-3 w-7 h-7 bg-white/90 rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+                  >
+                    <Star size={13} className={isFav ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
+                  </button>
+                </div>
+              )}
               {/* Info */}
               <div className="p-4">
                 <div className="flex items-start justify-between mb-1.5">
@@ -370,6 +476,97 @@ export default function TemplatesPage() {
                       </>
                     ) : (
                       'Create Template'
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {showEditModal && editingTemplate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => setShowEditModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-md p-6 overflow-hidden z-10"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-slate-900">Edit Template</h3>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateTemplate} className="space-y-4">
+                {editErrorMsg && (
+                  <p className="text-xs font-semibold text-red-500 bg-red-50 p-2.5 rounded-lg border border-red-100">
+                    {editErrorMsg}
+                  </p>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700">Template Name</label>
+                  <Input
+                    value={editTemplateName}
+                    onChange={(e) => setEditTemplateName(e.target.value)}
+                    placeholder="e.g. HPS Official Internship Letter"
+                    className="rounded-xl border-slate-200 text-sm h-10"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700">Description</label>
+                  <textarea
+                    value={editTemplateDesc}
+                    onChange={(e) => setEditTemplateDesc(e.target.value)}
+                    placeholder="Describe what this template is used for..."
+                    className="w-full min-h-[80px] rounded-xl border border-slate-200 p-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700">Tags (comma-separated)</label>
+                  <Input
+                    value={editTemplateTags}
+                    onChange={(e) => setEditTemplateTags(e.target.value)}
+                    placeholder="e.g. Internship, SDE, HPS"
+                    className="rounded-xl border-slate-200 text-sm h-10"
+                  />
+                </div>
+
+                <div className="flex gap-3 justify-end pt-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowEditModal(false)}
+                    className="rounded-xl text-slate-600 hover:bg-slate-50 text-sm h-10 px-4"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updating}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm h-10 px-4"
+                  >
+                    {updating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      'Save Changes'
                     )}
                   </Button>
                 </div>
