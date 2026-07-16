@@ -1,5 +1,6 @@
 'use client'
 
+// Force rebuild to sync card enhancements
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -246,11 +247,11 @@ export default function ClientsPage() {
           {/* Add client card */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
             <button onClick={() => setShowModal(true)}
-              className="w-full h-full min-h-[200px] border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-blue-300 hover:bg-blue-50/30 transition-all group">
-              <div className="w-10 h-10 bg-slate-100 group-hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors">
-                <Plus className="text-slate-400 group-hover:text-blue-600" size={20} />
+              className="w-full h-full min-h-[200px] border-2 border-dashed border-slate-300/80 bg-slate-50/40 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-blue-400 hover:bg-blue-50/40 hover:shadow-sm transition-all group">
+              <div className="w-10 h-10 bg-slate-100/80 group-hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors">
+                <Plus className="text-slate-500 group-hover:text-blue-600" size={20} />
               </div>
-              <span className="text-sm text-slate-500 group-hover:text-blue-600 font-medium transition-colors">Add New Client</span>
+              <span className="text-sm text-slate-600 group-hover:text-blue-600 font-semibold transition-colors">Add New Client</span>
             </button>
           </motion.div>
         </div>

@@ -1,4 +1,6 @@
 import './globals.css';
+import '@/components/templates/hps-invoice/invoice-hps.css';
+import '@/styles/invoiceCanvas.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 

@@ -45,8 +45,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const params = useParams()
   const pathname = usePathname()
   const appId = params?.appId as string
-  const app = APPLICATIONS.find((a) => a.id === appId)
-  const AppIcon = APP_ICONS[appId] || FileText
+  const activeAppId = appId || 'invoice'
+  const app = APPLICATIONS.find((a) => a.id === activeAppId)
+  const AppIcon = APP_ICONS[activeAppId] || FileText
 
   const [userRole, setUserRole] = useState<string>('Super Admin')
 
@@ -67,7 +68,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     return true // Super Admin has access to all
   })
 
-  const isActive = (href: string) => pathname?.includes(`/${href}`)
+  const isActive = (href: string) => {
+    if (href === 'templates') {
+      return pathname === '/templates' || pathname?.startsWith('/templates/')
+    }
+    return pathname?.includes(`/${href}`)
+  }
 
   return (
     <motion.aside
@@ -77,15 +83,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     >
       {/* App brand */}
       <div className={cn('flex items-center gap-3 px-4 py-4 border-b border-slate-100 min-h-[64px]', collapsed && 'justify-center px-0')}>
-        {app && (
+        {appId && app ? (
           <div className={`w-9 h-9 bg-gradient-to-br ${app.gradient} rounded-xl flex items-center justify-center flex-shrink-0`}>
             <AppIcon className="text-white" size={18} />
+          </div>
+        ) : (
+          <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Layout className="text-white" size={18} />
           </div>
         )}
         <AnimatePresence>
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
-              <p className="text-sm font-semibold text-slate-900 leading-tight whitespace-nowrap">{app?.name || 'DocFlow AI'}</p>
+              <p className="text-sm font-semibold text-slate-900 leading-tight whitespace-nowrap">{appId && app ? app.name : 'DocFlow AI'}</p>
               <p className="text-xs text-slate-400 whitespace-nowrap">Workspace</p>
             </motion.div>
           )}
@@ -96,8 +106,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {filteredNavItems.map((item) => {
           const active = isActive(item.href)
+          const targetHref = item.href === 'templates' ? '/templates' : `/app/${activeAppId}/${item.href}`
           return (
-            <Link key={item.href} href={`/app/${appId}/${item.href}`}>
+            <Link key={item.href} href={targetHref}>
               <div className={cn(
                 'sidebar-item',
                 active ? 'sidebar-item-active' : 'sidebar-item-inactive',
@@ -122,7 +133,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Bottom */}
       <div className="px-3 py-3 border-t border-slate-100 space-y-0.5">
-        <Link href={`/app/${appId}/editor`}>
+        <Link href={`/app/${activeAppId}/editor`}>
           <div className={cn('sidebar-item bg-blue-600 text-white hover:bg-blue-700 justify-center gap-2', collapsed && 'px-0')}>
             <FileText size={16} className="flex-shrink-0" />
             <AnimatePresence>

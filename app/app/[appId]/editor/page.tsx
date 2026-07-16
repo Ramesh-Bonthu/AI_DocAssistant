@@ -1,7 +1,7 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { useState, useCallback } from 'react'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -19,14 +19,65 @@ import { APPLICATIONS } from '@/lib/mock-data'
 import { EditorToolbar } from '@/components/editor/EditorToolbar'
 import { RightPanel } from '@/components/editor/RightPanel'
 import { cn } from '@/lib/utils'
-import { Save, CheckCircle } from 'lucide-react'
+import { Save, CheckCircle, Loader2 } from 'lucide-react'
+import InvoiceCanvas from '@/components/InvoiceCanvas'
 
 export default function EditorPage() {
   const params = useParams()
   const appId = params?.appId as string
   const app = APPLICATIONS.find((a) => a.id === appId)
+  const router = useRouter()
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const searchParams = useSearchParams()
+  const templateId = searchParams.get('templateId')
+  const [customTemplate, setCustomTemplate] = useState<any>(null)
+
+  useEffect(() => {
+    if (!templateId) {
+      router.replace(`/templates?selectForApp=${appId}`)
+    }
+  }, [templateId, appId, router])
+
+  useEffect(() => {
+    if (templateId) {
+      fetch(`/api/templates/${templateId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setCustomTemplate(data)
+          }
+        })
+        .catch((err) => console.error('Error fetching template:', err))
+    }
+  }, [templateId])
+
+  // Real-time invoice state modeled after HPS screenshot
+  const [invoiceData, setInvoiceData] = useState<any>({
+    refNo: 'HPS/MVGR/Dev/2026',
+    invoiceNo: 'IVHPS-0626-5032',
+    invoiceDate: '2026-06-25',
+    companyName: 'Harsha Perfect Solutions (OPC) Pvt Ltd',
+    companyAddress: '31-7-67, Assam Gardens, Visakhapatnam, Andhra Pradesh - 530004, India',
+    companyGst: '37AAGCH2004L1ZP',
+    customerName: 'The Director',
+    customerAddress: 'MVGR College of Engineering(A),\nChintalavalasa, Vizianagaram, 535005',
+    customerGst: '',
+    customerPhone: '',
+    customerEmail: '',
+    items: [
+      { id: '1', requirement: 'ESSL FP+FACE+ID\nMB160 +ID+B\n(With Battery)', hsn: '85437099', unitPrice: 13000, quantity: 3 },
+      { id: '2', requirement: 'Epson TM-m30III\n(Wi-Fi + Bluetooth )', hsn: '', unitPrice: 23000, quantity: 2 },
+      { id: '3', requirement: 'IOS (CLOUD & SERVER)', hsn: '', unitPrice: 12712, quantity: 1 },
+      { id: '4', requirement: 'ANDROID(CLOUD & SERVER)', hsn: '', unitPrice: 5932, quantity: 1 },
+    ],
+    terms: `1. The quoted price includes only the hardware & installation for the hardware mentioned in the invoice; additional accessories, if any, will be charged separately.
+2. Warranty for biometric devices and printers shall be as per the manufacturer's standard warranty policy.
+3. Any physical damage, mishandling, power fluctuations, or unauthorized repairs will void the warranty.
+4. Goods once delivered and accepted cannot be returned or exchanged except for manufacturing defects covered under warranty.
+We hope the above quotation meets your requirements and look forward to your positive response.`,
+    authorizedSignature: 'HPS(OPC) Pvt. Ltd.'
+  })
 
   const editor = useEditor({
     extensions: [
@@ -62,11 +113,26 @@ export default function EditorPage() {
     }, 800)
   }, [])
 
+  const handleExport = useCallback(() => {
+    if (appId === 'invoice') {
+      window.print()
+    }
+  }, [appId])
+
   const handleGenerate = useCallback((formData: Record<string, string>) => {
     if (!editor) return
     const content = generateDocument(appId, formData)
     editor.commands.setContent(content)
   }, [editor, appId])
+
+  if (!templateId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen w-screen bg-slate-50 gap-2.5 z-[9999] fixed inset-0">
+        <Loader2 className="animate-spin text-blue-600" size={32} />
+        <span className="text-sm font-semibold text-slate-500">Redirecting to Template Library...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full bg-slate-100 overflow-hidden">
@@ -74,7 +140,7 @@ export default function EditorPage() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Editor toolbar */}
         <div className="bg-white border-b border-slate-100 sticky top-0 z-20">
-          <EditorToolbar editor={editor} onSave={handleSave} saving={saving} saved={saved} appId={appId} />
+          <EditorToolbar editor={editor} onSave={handleSave} saving={saving} saved={saved} appId={appId} onExport={handleExport} />
         </div>
 
         {/* Paper */}
@@ -82,17 +148,43 @@ export default function EditorPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-[794px] min-h-[1123px] bg-white paper-shadow rounded-sm mb-8 relative"
+            className={cn(
+              "w-[794px] min-h-[1123px] bg-white paper-shadow rounded-sm mb-8 relative",
+              appId === 'invoice' && "invoice-print-container"
+            )}
             style={{ maxWidth: '100%' }}
           >
-            <EditorContent editor={editor} />
+            {customTemplate ? (
+              customTemplate.originalFile.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={`${customTemplate.originalFile}#toolbar=0&navpanes=0`}
+                  className="w-full h-full min-h-[1123px] border-none rounded-sm"
+                />
+              ) : (
+                <img
+                  src={customTemplate.originalFile}
+                  alt={customTemplate.templateName}
+                  className="w-full h-auto min-h-[1123px] object-contain rounded-sm"
+                />
+              )
+            ) : appId === 'invoice' ? (
+              <InvoiceCanvas data={invoiceData} />
+            ) : (
+              <EditorContent editor={editor} />
+            )}
           </motion.div>
         </div>
       </div>
 
       {/* Right panel */}
       <div className="w-80 flex-shrink-0 bg-white border-l border-slate-100 overflow-hidden flex flex-col">
-        <RightPanel appId={appId} editor={editor} onGenerate={handleGenerate} />
+        <RightPanel 
+          appId={appId} 
+          editor={editor} 
+          onGenerate={handleGenerate} 
+          invoiceData={invoiceData} 
+          onInvoiceDataChange={setInvoiceData} 
+        />
       </div>
     </div>
   )

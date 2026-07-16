@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import {
   FileText, Sparkles, Send, RefreshCw, AlignLeft, Languages,
-  Wand2, Zap, ChevronRight, Plus, Loader2, Bot, User
+  Wand2, Zap, ChevronRight, Plus, Loader2, Bot, User, Trash2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,8 @@ interface RightPanelProps {
   appId: string
   editor: ReturnType<typeof import('@tiptap/react').useEditor>
   onGenerate: (data: Record<string, string>) => void
+  invoiceData?: any
+  onInvoiceDataChange?: (data: any) => void
 }
 
 type TabType = 'form' | 'ai'
@@ -56,7 +58,7 @@ const AI_RESPONSES: Record<string, string> = {
   default: 'I\'ve processed your request. The document has been updated based on your instructions. Would you like me to make any additional changes?',
 }
 
-export function RightPanel({ appId, editor, onGenerate }: RightPanelProps) {
+export function RightPanel({ appId, editor, onGenerate, invoiceData, onInvoiceDataChange }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('form')
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
   const [inputMsg, setInputMsg] = useState('')
@@ -66,6 +68,33 @@ export function RightPanel({ appId, editor, onGenerate }: RightPanelProps) {
 
   const onSubmit = (data: any) => {
     onGenerate(data)
+  }
+
+  const addItem = () => {
+    const items = [...(invoiceData?.items || [])]
+    items.push({
+      id: Date.now().toString(),
+      requirement: 'New Item Description',
+      hsn: '',
+      unitPrice: 0,
+      quantity: 1
+    })
+    onInvoiceDataChange?.({ ...invoiceData, items })
+  }
+
+  const deleteItem = (id: string) => {
+    const items = (invoiceData?.items || []).filter((item: any) => item.id !== id)
+    onInvoiceDataChange?.({ ...invoiceData, items })
+  }
+
+  const updateItem = (id: string, key: string, value: any) => {
+    const items = (invoiceData?.items || []).map((item: any) => {
+      if (item.id === id) {
+        return { ...item, [key]: value }
+      }
+      return item
+    })
+    onInvoiceDataChange?.({ ...invoiceData, items })
   }
 
   const sendMessage = (content: string) => {
@@ -120,37 +149,166 @@ export function RightPanel({ appId, editor, onGenerate }: RightPanelProps) {
           {activeTab === 'form' ? (
             <motion.div key="form" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}
               className="flex-1 overflow-y-auto p-4">
-              <div className="mb-4">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{getFormTitle(appId)}</p>
-                <p className="text-xs text-slate-400 mt-0.5">Fill in the details to generate your document</p>
-              </div>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-                {formFields.map((field) => (
-                  <div key={field.name}>
-                    <Label className="text-xs font-medium text-slate-600 mb-1 block">{field.label}</Label>
-                    {field.type === 'textarea' ? (
-                      <Textarea {...register(field.name)} placeholder={field.placeholder} className="text-sm rounded-xl resize-none border-slate-200 focus-visible:ring-blue-500" rows={2} />
-                    ) : field.type === 'select' ? (
-                      <Select onValueChange={() => {}}>
-                        <SelectTrigger className="text-sm rounded-xl border-slate-200 h-9">
-                          <SelectValue placeholder={field.placeholder} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {field.options?.map((opt) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input {...register(field.name)} type={field.inputType || 'text'} placeholder={field.placeholder} className="text-sm rounded-xl border-slate-200 h-9 focus-visible:ring-blue-500" />
-                    )}
+              {appId === 'invoice' ? (
+                // Real-time custom invoice inputs
+                <div className="space-y-4">
+                  <div className="mb-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Invoice Details</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Fill in the details to update your invoice preview in real-time</p>
                   </div>
-                ))}
-                <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 mt-4 shadow-blue font-medium text-sm">
-                  {isSubmitting ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Sparkles size={14} className="mr-1.5" />}
-                  Generate Document
-                </Button>
-              </form>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[11px] font-semibold text-slate-600 mb-1 block">Ref Number</Label>
+                      <Input value={invoiceData?.refNo || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, refNo: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                    </div>
+                    <div>
+                      <Label className="text-[11px] font-semibold text-slate-600 mb-1 block">Invoice Number</Label>
+                      <Input value={invoiceData?.invoiceNo || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, invoiceNo: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-[11px] font-semibold text-slate-600 mb-1 block">Invoice Date</Label>
+                    <Input type="date" value={invoiceData?.invoiceDate || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, invoiceDate: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">From (Company)</span>
+                    <div className="space-y-2">
+                      <div>
+                        <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Company Name</Label>
+                        <Input value={invoiceData?.companyName || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, companyName: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Company Address</Label>
+                        <Textarea value={invoiceData?.companyAddress || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, companyAddress: e.target.value })} className="text-xs rounded-lg resize-none border-slate-200 focus-visible:ring-blue-500" rows={2} />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Company GSTIN</Label>
+                        <Input value={invoiceData?.companyGst || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, companyGst: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">To (Customer)</span>
+                    <div className="space-y-2">
+                      <div>
+                        <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Customer Name</Label>
+                        <Input value={invoiceData?.customerName || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, customerName: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Customer Address</Label>
+                        <Textarea value={invoiceData?.customerAddress || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, customerAddress: e.target.value })} className="text-xs rounded-lg resize-none border-slate-200 focus-visible:ring-blue-500" rows={2} />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Customer GSTIN (Optional)</Label>
+                        <Input value={invoiceData?.customerGst || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, customerGst: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Phone (Optional)</Label>
+                          <Input value={invoiceData?.customerPhone || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, customerPhone: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Email (Optional)</Label>
+                          <Input type="email" value={invoiceData?.customerEmail || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, customerEmail: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Items Table</span>
+                      <Button type="button" size="sm" variant="ghost" onClick={addItem} className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-transparent p-0 flex items-center gap-1">
+                        <Plus size={13} className="mr-0.5" /> Add Item
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {invoiceData?.items?.map((item: any, idx: number) => (
+                        <div key={item.id || idx} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-2 relative">
+                          <button type="button" onClick={() => deleteItem(item.id)} className="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition-colors">
+                            <Trash2 size={13} />
+                          </button>
+                          
+                          <div>
+                            <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Requirement / Description</Label>
+                            <Input value={item.requirement || ''} onChange={(e) => updateItem(item.id, 'requirement', e.target.value)} className="text-xs rounded-lg h-8 border-slate-200 bg-white focus-visible:ring-blue-500" />
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-1.5">
+                            <div>
+                              <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">HSN</Label>
+                              <Input value={item.hsn || ''} onChange={(e) => updateItem(item.id, 'hsn', e.target.value)} className="text-xs rounded-lg h-8 border-slate-200 bg-white focus-visible:ring-blue-500" />
+                            </div>
+                            <div>
+                              <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Unit Price (₹)</Label>
+                              <Input type="number" value={item.unitPrice || 0} onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)} className="text-xs rounded-lg h-8 border-slate-200 bg-white focus-visible:ring-blue-500" />
+                            </div>
+                            <div>
+                              <Label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Quantity</Label>
+                              <Input type="number" value={item.quantity || 0} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)} className="text-xs rounded-lg h-8 border-slate-200 bg-white focus-visible:ring-blue-500" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3">
+                    <div className="space-y-2">
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-600 mb-1 block">Terms & Conditions</Label>
+                        <Textarea value={invoiceData?.terms || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, terms: e.target.value })} className="text-xs rounded-lg resize-none border-slate-200 focus-visible:ring-blue-500" rows={3} />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-600 mb-1 block">Authorized Signatory</Label>
+                        <Input value={invoiceData?.authorizedSignature || ''} onChange={(e) => onInvoiceDataChange?.({ ...invoiceData, authorizedSignature: e.target.value })} className="text-xs rounded-lg h-9 border-slate-200 focus-visible:ring-blue-500" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button type="button" onClick={() => onGenerate?.(invoiceData)} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 mt-4 shadow-blue font-medium text-sm">
+                    <Sparkles size={14} className="mr-1.5" /> Generate Document
+                  </Button>
+                </div>
+              ) : (
+                // Standard form inputs
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{getFormTitle(appId)}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Fill in the details to generate your document</p>
+                  </div>
+                  {formFields.map((field) => (
+                    <div key={field.name}>
+                      <Label className="text-xs font-medium text-slate-600 mb-1 block">{field.label}</Label>
+                      {field.type === 'textarea' ? (
+                        <Textarea {...register(field.name)} placeholder={field.placeholder} className="text-sm rounded-xl resize-none border-slate-200 focus-visible:ring-blue-500" rows={2} />
+                      ) : field.type === 'select' ? (
+                        <Select onValueChange={() => {}}>
+                          <SelectTrigger className="text-sm rounded-xl border-slate-200 h-9">
+                            <SelectValue placeholder={field.placeholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options?.map((opt) => (
+                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input {...register(field.name)} type={field.inputType || 'text'} placeholder={field.placeholder} className="text-sm rounded-xl border-slate-200 h-9 focus-visible:ring-blue-500" />
+                      )}
+                    </div>
+                  ))}
+                  <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 mt-4 shadow-blue font-medium text-sm">
+                    {isSubmitting ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Sparkles size={14} className="mr-1.5" />}
+                    Generate Document
+                  </Button>
+                </form>
+              )}
 
               {/* Quick AI actions */}
               <div className="mt-5 pt-4 border-t border-slate-100">

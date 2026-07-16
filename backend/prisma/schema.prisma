@@ -63,16 +63,31 @@ model Document {
 }
 
 model Template {
-  id          String      @id @default(cuid())
-  appId       String
-  application Application @relation(fields: [appId], references: [id], onDelete: Cascade)
-  name        String
-  description String
-  preview     String
-  usageCount  Int         @default(0)
-  isFavorite  Boolean     @default(false)
-  tags        String      // Comma-separated list (e.g. "GST,Popular")
-  createdAt   DateTime    @default(now())
+  id             String      @id @default(cuid())
+  
+  // Existing fields for backward compatibility
+  appId          String?
+  application    Application? @relation(fields: [appId], references: [id], onDelete: Cascade)
+  name           String?
+  preview        String?
+  usageCount     Int         @default(0)
+  isFavorite     Boolean     @default(false)
+
+  // New fields for global template management
+  templateName   String      @default("")
+  companyName    String      @default("")
+  documentType   String      @default("")
+  description    String?
+  category       String?
+  tags           String?     // Comma-separated tags
+  paperSize      String      @default("A4")
+  orientation    String      @default("Portrait")
+  originalFile   String      @default("")
+  previewImage   String?
+  status         String      @default("Active")
+  version        String      @default("1.0")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
 
 model Activity {

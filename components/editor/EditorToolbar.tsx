@@ -20,6 +20,7 @@ interface EditorToolbarProps {
   saving: boolean
   saved: boolean
   appId: string
+  onExport?: () => void
 }
 
 const ToolBtn = ({ onClick, active, disabled, title, children }: {
@@ -49,7 +50,7 @@ const ToolBtn = ({ onClick, active, disabled, title, children }: {
   </TooltipProvider>
 )
 
-export function EditorToolbar({ editor, onSave, saving, saved, appId }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onSave, saving, saved, appId, onExport }: EditorToolbarProps) {
   const app = APPLICATIONS.find((a) => a.id === appId)
 
   if (!editor) return null
@@ -145,7 +146,7 @@ export function EditorToolbar({ editor, onSave, saving, saved, appId }: EditorTo
         <Button size="sm" onClick={onSave} className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
           <Save size={13} className="mr-1" /> Save
         </Button>
-        <Button size="sm" variant="outline" className="h-7 px-3 text-xs rounded-lg border-slate-200 text-slate-700">
+        <Button size="sm" variant="outline" onClick={onExport} className="h-7 px-3 text-xs rounded-lg border-slate-200 text-slate-700">
           <Download size={13} className="mr-1" /> Export
         </Button>
         <Button size="sm" variant="outline" className="h-7 px-3 text-xs rounded-lg border-slate-200 text-slate-700">
